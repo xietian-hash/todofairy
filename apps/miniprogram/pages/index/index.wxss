@@ -220,7 +220,9 @@
 }
 
 .create-btn {
-  min-height: 88rpx;
+  height: 88rpx;
+  line-height: 88rpx;
+  padding: 0;
   border-radius: 60rpx;
   background: #4299e1;
   color: #ffffff;
@@ -231,21 +233,24 @@
 .modal-mask {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.45);
+  background: transparent;
+  z-index: 9999;
   display: flex;
   justify-content: center;
   align-items: flex-end;
-  padding: 0 30rpx 24rpx;
+  padding: 0;
   box-sizing: border-box;
 }
 
 .modal-panel {
   width: 100%;
-  max-height: 88vh;
-  overflow-y: auto;
+  height: 80vh;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   background: #ffffff;
-  border-radius: 24rpx;
-  padding: 24rpx;
+  border-radius: 24rpx 24rpx 0 0;
   box-sizing: border-box;
 }
 
@@ -253,7 +258,23 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12rpx;
+  padding: 24rpx 30rpx 12rpx;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.modal-body {
+  flex: 1;
+  overflow: hidden;
+  padding: 0 30rpx;
+  box-sizing: border-box;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.modal-body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 .modal-title {
@@ -264,8 +285,18 @@
 .close-btn {
   width: 72rpx;
   height: 72rpx;
+  min-width: 72rpx;
   min-height: 72rpx;
-  border-radius: 36rpx;
+  max-width: 72rpx;
+  max-height: 72rpx;
+  padding: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  line-height: 1;
   background: #f1f5f9;
   font-size: 38rpx;
   color: #64748b;
@@ -328,15 +359,21 @@
 }
 
 .modal-actions {
-  margin-top: 24rpx;
+  flex-shrink: 0;
   display: flex;
   gap: 12rpx;
+  padding: 16rpx 30rpx 24rpx;
+  box-sizing: border-box;
+  border-top: 1rpx solid #e2e8f0;
+  background: #ffffff;
 }
 
 .ghost-btn,
 .primary-btn {
   flex: 1;
-  min-height: 88rpx;
+  height: 88rpx;
+  line-height: 88rpx;
+  padding: 0;
   border-radius: 48rpx;
   font-size: 28rpx;
 }

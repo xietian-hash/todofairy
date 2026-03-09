@@ -2,14 +2,15 @@ const api = require("../../services/api");
 const { getToken, setToken } = require("../../services/http");
 const { getTodayDate, monthOfDate, shiftMonth, listMonthGrid } = require("../../utils/date");
 
+const TASK_MODAL_ANIM_DURATION = 160;
+const TASK_MODAL_CLOSE_DELAY = TASK_MODAL_ANIM_DURATION + 20;
+
 function defaultTaskForm(today) {
   return {
     title: "",
     remark: "",
     effectiveStartDate: today,
-    effectiveEndDate: today,
-    longTerm: false,
-    status: 1,
+    effectiveEndDate: "",
   };
 }
 
@@ -32,6 +33,8 @@ Page({
     editingTaskId: "",
     taskForm: {},
     taskModalSaving: false,
+    taskModalClosing: false,
+    taskModalAnimation: null,
   },
 
   async onLoad() {
@@ -43,6 +46,13 @@ Page({
       taskForm: defaultTaskForm(today),
     });
     await this.bootstrap();
+  },
+
+  onUnload() {
+    if (this._taskModalCloseTimer) {
+      clearTimeout(this._taskModalCloseTimer);
+      this._taskModalCloseTimer = null;
+    }
   },
 
   async onPullDownRefresh() {
@@ -151,19 +161,73 @@ Page({
 
   onOpenCreateTask() {
     const { today } = this.data;
+    if (this._taskModalCloseTimer) {
+      clearTimeout(this._taskModalCloseTimer);
+      this._taskModalCloseTimer = null;
+    }
+    const initialAnimation = wx.createAnimation({
+      duration: 0,
+      timingFunction: "linear",
+    });
+    initialAnimation.translateY("100%").step();
     this.setData({
       taskModalVisible: true,
+      taskModalClosing: false,
       taskModalMode: "create",
       editingTaskId: "",
       taskForm: defaultTaskForm(today),
+      taskModalAnimation: initialAnimation.export(),
+    });
+
+    wx.nextTick(() => {
+      const openAnimation = wx.createAnimation({
+        duration: TASK_MODAL_ANIM_DURATION,
+        timingFunction: "ease-out",
+      });
+      openAnimation.translateY("0").step();
+      this.setData({
+        taskModalAnimation: openAnimation.export(),
+      });
     });
   },
 
   onCloseTaskModal() {
-    this.setData({
-      taskModalVisible: false,
-      taskModalSaving: false,
+    if (!this.data.taskModalVisible || this.data.taskModalClosing) {
+      return;
+    }
+    const closeAnimation = wx.createAnimation({
+      duration: TASK_MODAL_ANIM_DURATION,
+      timingFunction: "ease-in",
     });
+    closeAnimation.translateY("100%").step();
+    this.setData({
+      taskModalClosing: true,
+      taskModalAnimation: closeAnimation.export(),
+    });
+    if (this._taskModalCloseTimer) {
+      clearTimeout(this._taskModalCloseTimer);
+    }
+    this._taskModalCloseTimer = setTimeout(() => {
+      this._taskModalCloseTimer = null;
+      this.setData({
+        taskModalVisible: false,
+        taskModalClosing: false,
+        taskModalAnimation: null,
+        taskModalSaving: false,
+      });
+    }, TASK_MODAL_CLOSE_DELAY);
+  },
+
+  onMaskTap() {
+    this.onCloseTaskModal();
+  },
+
+  onMaskTouchMove() {
+    // 拦截背景滚动，避免弹窗打开时穿透到底层页面。
+  },
+
+  onPanelTap() {
+    // 拦截冒泡，避免点击弹窗内容时触发遮罩关闭。
   },
 
   onTaskTitleInput(e) {
@@ -190,18 +254,6 @@ Page({
     });
   },
 
-  onTaskLongTermSwitch(e) {
-    this.setData({
-      "taskForm.longTerm": e.detail.value,
-    });
-  },
-
-  onTaskStatusChange(e) {
-    this.setData({
-      "taskForm.status": Number(e.detail.value),
-    });
-  },
-
   async onSaveTask() {
     const { taskForm, taskModalMode, editingTaskId } = this.data;
     if (!taskForm.title || !taskForm.title.trim()) {
@@ -223,9 +275,9 @@ Page({
       title: taskForm.title.trim(),
       remark: (taskForm.remark || "").trim(),
       effectiveStartDate: taskForm.effectiveStartDate,
-      effectiveEndDate: taskForm.longTerm ? null : taskForm.effectiveEndDate || null,
+      effectiveEndDate: taskForm.effectiveEndDate || null,
       repeatRule: { type: "daily" },
-      status: Number(taskForm.status || 1),
+      status: 1,
     };
 
     this.setData({

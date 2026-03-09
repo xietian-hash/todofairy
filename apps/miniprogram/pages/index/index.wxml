@@ -62,58 +62,40 @@
     <button class="create-btn" bindtap="onOpenCreateTask">+ 新建任务</button>
   </view>
 
-  <view wx:if="{{taskModalVisible}}" class="modal-mask" catchtouchmove="true">
-    <view class="modal-panel">
+  <view wx:if="{{taskModalVisible}}" class="modal-mask" bindtap="onMaskTap" catchtouchmove="onMaskTouchMove">
+    <view class="modal-panel" animation="{{taskModalAnimation}}" catchtap="onPanelTap">
       <view class="modal-header">
         <text class="modal-title">{{taskModalMode==='create' ? '新建任务' : '编辑任务'}}</text>
-        <button class="close-btn" bindtap="onCloseTaskModal">×</button>
+        <view class="close-btn" bindtap="onCloseTaskModal">×</view>
       </view>
-
-      <view class="form-item">
-        <text class="label">任务标题 *</text>
-        <input class="input" placeholder="请输入任务标题" value="{{taskForm.title}}" bindinput="onTaskTitleInput" maxlength="64" />
-      </view>
-
-      <view class="form-item">
-        <text class="label">备注说明</text>
-        <textarea class="textarea" placeholder="请输入备注（可选）" value="{{taskForm.remark}}" bindinput="onTaskRemarkInput" maxlength="300"></textarea>
-      </view>
-
-      <view class="form-item row">
-        <view class="half">
-          <text class="label">开始日期 *</text>
-          <picker mode="date" value="{{taskForm.effectiveStartDate}}" bindchange="onTaskStartDateChange">
-            <view class="picker">{{taskForm.effectiveStartDate || '请选择'}}</view>
-          </picker>
+      <scroll-view class="modal-body" scroll-y enhanced="{{true}}" show-scrollbar="{{false}}">
+        <view class="form-item">
+          <text class="label">任务标题 *</text>
+          <input class="input" placeholder="请输入任务标题" value="{{taskForm.title}}" bindinput="onTaskTitleInput" maxlength="64" />
         </view>
-        <view class="half">
-          <text class="label">结束日期</text>
-          <picker mode="date" value="{{taskForm.effectiveEndDate}}" bindchange="onTaskEndDateChange" disabled="{{taskForm.longTerm}}">
-            <view class="picker {{taskForm.longTerm ? 'disabled' : ''}}">
-              {{taskForm.longTerm ? '长期有效' : (taskForm.effectiveEndDate || '请选择')}}
-            </view>
-          </picker>
+
+        <view class="form-item">
+          <text class="label">备注说明</text>
+          <textarea class="textarea" placeholder="请输入备注（可选）" value="{{taskForm.remark}}" bindinput="onTaskRemarkInput" maxlength="300"></textarea>
         </view>
-      </view>
 
-      <view class="form-item row align-center">
-        <text class="label">长期有效</text>
-        <switch checked="{{taskForm.longTerm}}" color="#4299E1" bindchange="onTaskLongTermSwitch" />
-      </view>
-
-      <view class="form-item row align-center">
-        <text class="label">任务状态</text>
-        <radio-group bindchange="onTaskStatusChange">
-          <label class="radio-item">
-            <radio value="1" checked="{{taskForm.status===1}}" color="#4299E1" />
-            <text>启用</text>
-          </label>
-          <label class="radio-item">
-            <radio value="0" checked="{{taskForm.status===0}}" color="#4299E1" />
-            <text>停用</text>
-          </label>
-        </radio-group>
-      </view>
+        <view class="form-item row">
+          <view class="half">
+            <text class="label">开始日期 *</text>
+            <picker mode="date" value="{{taskForm.effectiveStartDate}}" bindchange="onTaskStartDateChange">
+              <view class="picker">{{taskForm.effectiveStartDate || '请选择'}}</view>
+            </picker>
+          </view>
+          <view class="half">
+            <text class="label">结束日期</text>
+            <picker mode="date" value="{{taskForm.effectiveEndDate}}" bindchange="onTaskEndDateChange">
+              <view class="picker">
+                {{taskForm.effectiveEndDate || '留空即长期有效'}}
+              </view>
+            </picker>
+          </view>
+        </view>
+      </scroll-view>
 
       <view class="modal-actions">
         <button class="ghost-btn" bindtap="onCloseTaskModal">取消</button>
