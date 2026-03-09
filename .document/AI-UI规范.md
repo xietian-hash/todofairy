@@ -108,7 +108,7 @@
 | 项 | 规范 |
 |---|---|
 | 基础 | 背景 `--color-bg-card`，圆角 `20rpx`，无描边，内边距 `24rpx`，应用 `--shadow-convex` 浮雕阴影，左侧 `4rpx` 品牌色（`#21BFFF`）竖条装饰 |
-| 已完成态 | 底色 `#F0FDFA`，标题加删除线（`text-decoration: line-through`），辅助文案 `--color-text-secondary`，左侧色条改为 `#10B981`（翠绿） |
+| 已完成态 | 底色 `#F0FDFA`，标题文字色 `--color-text-secondary`（不加删除线），左侧色条改为 `#10B981`（翠绿） |
 | 已失效标记 | 固定在待办文本区域右侧展示"已失效"标签（底 `#FEE2E2`，字 `#B91C1C`，圆角 `8rpx`），左侧色条改为 `#94A3B8`（灰色） |
 | 点击反馈 | 按下时阴影从 `--shadow-convex` 过渡到 `--shadow-concave`，模拟物理按压感 |
 | 布局 | 文本区域在左，勾选按钮固定在整行最右侧 |

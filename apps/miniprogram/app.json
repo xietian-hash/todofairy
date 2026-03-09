@@ -7,7 +7,8 @@
     "backgroundTextStyle": "light",
     "navigationBarBackgroundColor": "#F5F7FA",
     "navigationBarTitleText": "待办精灵",
-    "navigationBarTextStyle": "black"
+    "navigationBarTextStyle": "black",
+    "navigationStyle": "custom"
   },
   "sitemapLocation": "sitemap.json",
   "style": "v2",

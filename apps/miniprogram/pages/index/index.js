@@ -36,11 +36,19 @@ Page({
     taskModalSaving: false,
     taskModalClosing: false,
     taskModalAnimation: null,
+    statusBarHeight: 0,
+    navBarHeight: 44,
   },
 
   async onLoad() {
+    const sysInfo = wx.getSystemInfoSync();
+    const menuBtn = wx.getMenuButtonBoundingClientRect();
+    const statusBarHeight = sysInfo.statusBarHeight;
+    const navBarHeight = (menuBtn.top - statusBarHeight) * 2 + menuBtn.height;
     const today = getTodayDate();
     this.setData({
+      statusBarHeight,
+      navBarHeight,
       today,
       selectedDate: today,
       currentMonth: monthOfDate(today),

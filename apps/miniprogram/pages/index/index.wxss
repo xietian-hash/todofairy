@@ -2,9 +2,33 @@
 .page {
   min-height: 100vh;
   box-sizing: border-box;
-  padding: 20rpx 30rpx 140rpx;
+  padding: 0 30rpx 140rpx;
   background: #f5f7fa;
   color: #1e293b;
+}
+
+/* ===== 自定义导航栏 ===== */
+.custom-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: #f5f7fa;
+}
+
+.custom-nav-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-title {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #1e293b;
+  text-align: center;
 }
 
 /* ===== 拟物公共卡片 ===== */
@@ -22,6 +46,7 @@
 .calendar-card {
   padding: 0 20rpx 20rpx;
   overflow: hidden;
+  margin-top: 20rpx;
 }
 
 .calendar-banner {
@@ -164,8 +189,8 @@
 
 .progress-count {
   font-size: 24rpx;
-  font-weight: 600;
-  color: #21bfff;
+  font-weight: 400;
+  color: #2daffb;
 }
 
 .progress-track {
@@ -271,7 +296,6 @@
 }
 
 .todo-card.done .todo-title {
-  text-decoration: line-through;
   color: #64748b;
 }
 
