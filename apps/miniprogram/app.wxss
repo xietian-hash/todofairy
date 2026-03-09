@@ -22,9 +22,10 @@ button::after {
 }
 
 page {
-  background: #e8f4f8;
+  background: #c9f0e4;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: #1a3c34;
 }

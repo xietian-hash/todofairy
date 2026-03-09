@@ -23,6 +23,7 @@
           bindtap="onSelectDate"
         >
           <text>{{item.day}}</text>
+          <view class="today-dot"></view>
         </view>
         <view wx:else class="day-cell empty"></view>
       </block>

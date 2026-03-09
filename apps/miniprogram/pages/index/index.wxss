@@ -1,19 +1,24 @@
+/* ===== 页面基底 ===== */
 .page {
   min-height: 100vh;
   box-sizing: border-box;
   padding: 20rpx 30rpx 140rpx;
-  background: #e8f4f8;
-  color: #1f2937;
+  background: #c9f0e4;
+  color: #1a3c34;
 }
 
+/* ===== 拟物公共卡片 ===== */
 .calendar-card,
 .progress-card,
 .todo-card {
-  background: #ffffff;
-  border-radius: 16rpx;
-  border: 1rpx solid #dce7ee;
+  background: #e0f7ef;
+  border-radius: 20rpx;
+  border: none;
+  box-shadow: 6rpx 6rpx 12rpx rgba(0, 0, 0, 0.08),
+    -6rpx -6rpx 12rpx rgba(255, 255, 255, 0.9);
 }
 
+/* ===== 日历区域 ===== */
 .calendar-card {
   padding: 20rpx;
 }
@@ -38,15 +43,23 @@
   align-items: center;
   justify-content: center;
   border-radius: 36rpx;
-  background: #f5fbfe;
-  color: #4299e1;
+  background: #e0f7ef;
+  color: #00c9a7;
   font-size: 40rpx;
   text-align: center;
+  box-shadow: 6rpx 6rpx 12rpx rgba(0, 0, 0, 0.08),
+    -6rpx -6rpx 12rpx rgba(255, 255, 255, 0.9);
+}
+
+.month-btn:active {
+  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.1),
+    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 0.7);
 }
 
 .month-text {
-  font-size: 30rpx;
-  font-weight: 500;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1a3c34;
 }
 
 .week-row {
@@ -54,7 +67,7 @@
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   text-align: center;
-  color: #64748b;
+  color: #5b8a7a;
   font-size: 22rpx;
 }
 
@@ -65,44 +78,64 @@
   gap: 10rpx;
 }
 
+/* ===== 日历格子（拟物） ===== */
 .day-cell {
   height: 72rpx;
   border-radius: 12rpx;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: 24rpx;
+  background: #e0f7ef;
+  box-shadow: 3rpx 3rpx 6rpx rgba(0, 0, 0, 0.06),
+    -3rpx -3rpx 6rpx rgba(255, 255, 255, 0.8);
+  position: relative;
 }
 
 .day-cell.empty {
   background: transparent;
+  box-shadow: none;
 }
 
-.day-cell.today {
-  box-shadow: inset 0 0 0 2rpx #4299e1;
+.day-cell.today .today-dot {
+  display: block;
+}
+
+.today-dot {
+  display: none;
+  width: 6rpx;
+  height: 6rpx;
+  border-radius: 50%;
+  background: #00c9a7;
+  margin-top: 2rpx;
 }
 
 .day-cell.selected {
-  box-shadow: inset 0 0 0 2rpx #1d4ed8;
+  background: #e6fff8;
   font-weight: 600;
+  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.1),
+    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 0.7);
 }
 
+/* ===== 日历四态 ===== */
 .status-completed {
-  background: #dcfce7;
+  background: #a7f3d0;
 }
 
 .status-history_uncompleted {
-  background: #fee2e2;
+  background: #fecaca;
 }
 
 .status-today_uncompleted {
-  background: #fef3c7;
+  background: #fde68a;
 }
 
 .status-no_todo {
-  background: #e2e8f0;
+  background: #d1e5db;
 }
 
+/* ===== 进度卡片 ===== */
 .progress-card {
   margin-top: 24rpx;
   padding: 20rpx;
@@ -111,9 +144,10 @@
 .progress-inline {
   font-size: 26rpx;
   font-weight: 500;
-  color: #334155;
+  color: #1a3c34;
 }
 
+/* ===== 待办列表 ===== */
 .todo-list {
   margin-top: 20rpx;
   display: flex;
@@ -123,10 +157,16 @@
 
 .todo-card {
   padding: 20rpx;
+  transition: box-shadow 0.15s ease;
+}
+
+.todo-card:active {
+  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.1),
+    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 0.7);
 }
 
 .todo-card.done {
-  background: #f0fdf4;
+  background: #d1f5e8;
 }
 
 .todo-main {
@@ -135,33 +175,39 @@
   gap: 16rpx;
 }
 
+/* ===== 勾选框（拟物） ===== */
 .check-btn {
   margin: 0;
-  width: 40rpx;
-  min-width: 40rpx;
-  max-width: 40rpx;
-  height: 40rpx;
-  min-height: 40rpx;
-  max-height: 40rpx;
-  flex: 0 0 40rpx;
-  border-radius: 20rpx;
-  border: 2rpx solid #cbd5e1;
-  background: #ffffff;
-  color: #ffffff;
+  width: 44rpx;
+  min-width: 44rpx;
+  max-width: 44rpx;
+  height: 44rpx;
+  min-height: 44rpx;
+  max-height: 44rpx;
+  flex: 0 0 44rpx;
+  border-radius: 22rpx;
+  border: none;
+  background: #e0f7ef;
+  color: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 24rpx;
   line-height: 1;
   padding: 0;
+  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.1),
+    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 0.7);
+  transition: box-shadow 0.2s ease, background 0.2s ease;
 }
 
 .check-btn.checked {
   background: #10b981;
-  border-color: #10b981;
   color: #ffffff;
+  box-shadow: 6rpx 6rpx 12rpx rgba(0, 0, 0, 0.08),
+    -6rpx -6rpx 12rpx rgba(255, 255, 255, 0.9);
 }
 
+/* ===== 待办内容行 ===== */
 .todo-content-row {
   flex: 1;
   min-width: 0;
@@ -180,38 +226,48 @@
   white-space: nowrap;
 }
 
+.todo-card.done .todo-title {
+  text-decoration: line-through;
+  color: #5b8a7a;
+}
+
 .expired-tag {
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
   height: 40rpx;
   padding: 0 12rpx;
-  border-radius: 20rpx;
+  border-radius: 8rpx;
   font-size: 22rpx;
   background: #fee2e2;
   color: #b91c1c;
 }
 
+/* ===== 空态 ===== */
 .empty-state {
   margin-top: 30rpx;
   padding: 60rpx 20rpx;
-  border-radius: 16rpx;
+  border-radius: 20rpx;
   text-align: center;
-  background: #ffffff;
-  border: 1rpx dashed #dce7ee;
+  background: #e0f7ef;
+  border: none;
+  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.06),
+    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 0.6);
 }
 
 .empty-title {
   font-size: 30rpx;
   font-weight: 500;
+  color: #1a3c34;
 }
 
 .empty-desc {
   margin-top: 10rpx;
   font-size: 24rpx;
-  color: #64748b;
+  color: #5b8a7a;
 }
 
+/* ===== 底部新建任务按钮（浮雕） ===== */
 .bottom-bar {
   position: fixed;
   left: 30rpx;
@@ -224,16 +280,26 @@
   line-height: 88rpx;
   padding: 0;
   border-radius: 60rpx;
-  background: #4299e1;
+  background: #00c9a7;
   color: #ffffff;
   font-size: 30rpx;
   font-weight: 500;
+  box-shadow: 6rpx 6rpx 12rpx rgba(0, 0, 0, 0.08),
+    -6rpx -6rpx 12rpx rgba(255, 255, 255, 0.9);
+  transition: box-shadow 0.15s ease;
 }
 
+.create-btn:active {
+  background: #00b396;
+  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.1),
+    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 0.7);
+}
+
+/* ===== 弹窗遮罩 ===== */
 .modal-mask {
   position: fixed;
   inset: 0;
-  background: transparent;
+  background: rgba(0, 0, 0, 0.3);
   z-index: 9999;
   display: flex;
   justify-content: center;
@@ -249,11 +315,12 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  background: #ffffff;
-  border-radius: 24rpx 24rpx 0 0;
+  background: #e0f7ef;
+  border-radius: 28rpx 28rpx 0 0;
   box-sizing: border-box;
 }
 
+/* ===== 弹窗头部 ===== */
 .modal-header {
   display: flex;
   justify-content: space-between;
@@ -263,23 +330,10 @@
   flex-shrink: 0;
 }
 
-.modal-body {
-  flex: 1;
-  overflow: hidden;
-  padding: 0 30rpx;
-  box-sizing: border-box;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.modal-body::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-}
-
 .modal-title {
   font-size: 32rpx;
   font-weight: 600;
+  color: #1a3c34;
 }
 
 .close-btn {
@@ -297,11 +351,34 @@
   flex-shrink: 0;
   overflow: hidden;
   line-height: 1;
-  background: #f1f5f9;
+  background: #e0f7ef;
   font-size: 38rpx;
-  color: #64748b;
+  color: #5b8a7a;
+  box-shadow: 6rpx 6rpx 12rpx rgba(0, 0, 0, 0.08),
+    -6rpx -6rpx 12rpx rgba(255, 255, 255, 0.9);
 }
 
+.close-btn:active {
+  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.1),
+    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 0.7);
+}
+
+/* ===== 弹窗内容区 ===== */
+.modal-body {
+  flex: 1;
+  overflow: hidden;
+  padding: 0 30rpx;
+  box-sizing: border-box;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.modal-body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* ===== 表单项 ===== */
 .form-item {
   margin-top: 16rpx;
 }
@@ -322,26 +399,35 @@
 
 .label {
   font-size: 24rpx;
-  color: #64748b;
+  color: #5b8a7a;
 }
 
+/* ===== 输入框（拟物凹陷） ===== */
 .input,
 .picker,
 .textarea {
   margin-top: 8rpx;
-  border: 1rpx solid #dce7ee;
-  border-radius: 12rpx;
+  border: none;
+  border-radius: 16rpx;
   padding: 18rpx 20rpx;
   box-sizing: border-box;
   font-size: 28rpx;
-  color: #1f2937;
+  color: #1a3c34;
   min-height: 80rpx;
-  background: #ffffff;
+  background: #e0f7ef;
+  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.1),
+    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 0.7);
+}
+
+.input:focus,
+.textarea:focus {
+  box-shadow: inset 4rpx 4rpx 10rpx rgba(0, 0, 0, 0.12),
+    inset -4rpx -4rpx 10rpx rgba(255, 255, 255, 0.6);
 }
 
 .picker.disabled {
-  background: #f1f5f9;
-  color: #94a3b8;
+  background: #d1e5db;
+  color: #93c5b4;
 }
 
 .textarea {
@@ -355,17 +441,18 @@
   align-items: center;
   gap: 8rpx;
   font-size: 24rpx;
-  color: #334155;
+  color: #1a3c34;
 }
 
+/* ===== 弹窗底部按钮（拟物） ===== */
 .modal-actions {
   flex-shrink: 0;
   display: flex;
   gap: 12rpx;
   padding: 16rpx 30rpx 24rpx;
   box-sizing: border-box;
-  border-top: 1rpx solid #e2e8f0;
-  background: #ffffff;
+  border-top: none;
+  background: #e0f7ef;
 }
 
 .ghost-btn,
@@ -376,30 +463,49 @@
   padding: 0;
   border-radius: 48rpx;
   font-size: 28rpx;
+  transition: box-shadow 0.15s ease;
 }
 
 .ghost-btn {
-  background: #ffffff;
-  border: 1rpx solid #4299e1;
-  color: #4299e1;
+  background: #e0f7ef;
+  border: none;
+  color: #00c9a7;
+  box-shadow: 6rpx 6rpx 12rpx rgba(0, 0, 0, 0.08),
+    -6rpx -6rpx 12rpx rgba(255, 255, 255, 0.9);
+}
+
+.ghost-btn:active {
+  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.1),
+    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 0.7);
 }
 
 .primary-btn {
-  background: #4299e1;
+  background: #00c9a7;
   color: #ffffff;
+  box-shadow: 6rpx 6rpx 12rpx rgba(0, 0, 0, 0.08),
+    -6rpx -6rpx 12rpx rgba(255, 255, 255, 0.9);
 }
 
+.primary-btn:active {
+  background: #00b396;
+  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.1),
+    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 0.7);
+}
+
+/* ===== 错误提示条 ===== */
 .error-bar {
   position: fixed;
   left: 30rpx;
   right: 30rpx;
   bottom: 130rpx;
   min-height: 72rpx;
-  border-radius: 12rpx;
+  border-radius: 20rpx;
   background: #fee2e2;
   color: #b91c1c;
   font-size: 24rpx;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 6rpx 6rpx 12rpx rgba(0, 0, 0, 0.08),
+    -6rpx -6rpx 12rpx rgba(255, 255, 255, 0.9);
 }
