@@ -1,13 +1,12 @@
 {
   "pages": [
-    "pages/index/index",
-    "pages/example/index"
+    "pages/index/index"
   ],
   "window": {
-    "backgroundColor": "#F6F6F6",
+    "backgroundColor": "#E8F4F8",
     "backgroundTextStyle": "light",
-    "navigationBarBackgroundColor": "#F6F6F6",
-    "navigationBarTitleText": "云开发 QuickStart",
+    "navigationBarBackgroundColor": "#E8F4F8",
+    "navigationBarTitleText": "待办精灵",
     "navigationBarTextStyle": "black"
   },
   "sitemapLocation": "sitemap.json",

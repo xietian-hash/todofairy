@@ -1,0 +1,620 @@
+openapi: 3.0.3
+info:
+  title: 待办精灵小程序 API
+  version: 1.0.0
+  description: |
+    本期仅面向微信小程序，采用 gateway 云函数单入口。
+    统一响应结构：
+    - code: 0 表示成功，非 0 表示业务错误
+    - message: 响应消息
+    - data: 响应载荷
+    - traceId: 链路追踪标识
+servers:
+  - url: /api/v1
+tags:
+  - name: 健康检查
+  - name: 认证
+  - name: 日历
+  - name: 待办
+  - name: 任务
+  - name: 内部任务
+paths:
+  /health:
+    get:
+      tags:
+        - 健康检查
+      summary: 健康检查
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+  /auth/wechat-login:
+    post:
+      tags:
+        - 认证
+      summary: 微信登录并获取访问令牌
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WechatLoginRequest'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+  /calendar/month:
+    get:
+      tags:
+        - 日历
+      summary: 获取月历状态
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: month
+          in: query
+          required: true
+          schema:
+            type: string
+            pattern: '^\d{4}-\d{2}$'
+          description: 月份，格式 yyyy-MM
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalendarMonthResponse'
+  /todos:
+    get:
+      tags:
+        - 待办
+      summary: 查询某日待办列表
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          description: 日期，格式 yyyy-MM-dd
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: integer
+            enum: [1, 2]
+          description: 过滤执行状态（1=未完成，2=已完成）
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoListResponse'
+  /todos/{todoId}/status:
+    patch:
+      tags:
+        - 待办
+      summary: 设置待办状态（未完成/已完成）
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: todoId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TodoStatusUpdateRequest'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoDetailResponse'
+  /todos/{todoId}/complete:
+    patch:
+      tags:
+        - 待办
+      summary: 完成待办（兼容接口，等价于设置status=2）
+      deprecated: true
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: todoId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoDetailResponse'
+  /todos/{todoId}:
+    delete:
+      tags:
+        - 待办
+      summary: 删除待办（软删除）
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: todoId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+  /tasks:
+    post:
+      tags:
+        - 任务
+      summary: 创建任务
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskUpsertRequest'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDetailResponse'
+  /tasks/{taskId}:
+    get:
+      tags:
+        - 任务
+      summary: 获取任务详情
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDetailResponse'
+    put:
+      tags:
+        - 任务
+      summary: 编辑任务
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskUpsertRequest'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDetailResponse'
+    delete:
+      tags:
+        - 任务
+      summary: 删除任务（软删除）
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+  /internal/daily-rollover:
+    post:
+      tags:
+        - 内部任务
+      summary: 日切任务（生成当日待办 + 标记历史未完成为失效）
+      description: 仅供定时触发调用，需要内部密钥
+      parameters:
+        - name: x-internal-key
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailyRolloverResponse'
+  /internal/db-init:
+    post:
+      tags:
+        - 内部任务
+      summary: 初始化数据库集合与索引
+      description: 仅供初始化阶段调用，需要内部密钥
+      parameters:
+        - name: x-internal-key
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DbInitResponse'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    BaseResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 0
+        message:
+          type: string
+          example: ok
+        data:
+          nullable: true
+        traceId:
+          type: string
+      required: [code, message, traceId]
+    SuccessResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              additionalProperties: true
+    HealthResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [ok]
+                now:
+                  type: integer
+                  format: int64
+              required: [status, now]
+    WechatLoginRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          description: 小程序 wx.login 获取的 code（本期可选）
+    LoginData:
+      type: object
+      properties:
+        token:
+          type: string
+        expiresIn:
+          type: integer
+          example: 43200
+        user:
+          $ref: '#/components/schemas/UserProfile'
+      required: [token, expiresIn, user]
+    LoginResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/LoginData'
+    UserProfile:
+      type: object
+      properties:
+        userId:
+          type: string
+        nickname:
+          type: string
+          nullable: true
+        avatarUrl:
+          type: string
+          nullable: true
+      required: [userId]
+    TaskUpsertRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 64
+        remark:
+          type: string
+          maxLength: 300
+          nullable: true
+        effectiveStartDate:
+          type: string
+          format: date
+        effectiveEndDate:
+          type: string
+          format: date
+          nullable: true
+        repeatRule:
+          type: object
+          properties:
+            type:
+              type: string
+              enum: [daily]
+          required: [type]
+        status:
+          type: integer
+          enum: [0, 1]
+      required: [title, effectiveStartDate]
+    TaskDetail:
+      type: object
+      properties:
+        _id:
+          type: string
+        userId:
+          type: string
+        title:
+          type: string
+        remark:
+          type: string
+          nullable: true
+        effectiveStartDate:
+          type: string
+          format: date
+        effectiveEndDate:
+          type: string
+          format: date
+          nullable: true
+        repeatRule:
+          type: object
+        status:
+          type: integer
+          enum: [0, 1]
+        version:
+          type: integer
+        isDeleted:
+          type: boolean
+        createdAt:
+          type: integer
+          format: int64
+        updatedAt:
+          type: integer
+          format: int64
+      required:
+        - _id
+        - userId
+        - title
+        - effectiveStartDate
+        - repeatRule
+        - status
+        - version
+        - isDeleted
+        - createdAt
+        - updatedAt
+    TaskDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/TaskDetail'
+    TodoDetail:
+      type: object
+      properties:
+        _id:
+          type: string
+        userId:
+          type: string
+        taskId:
+          type: string
+        taskVersion:
+          type: integer
+        todoDate:
+          type: string
+          format: date
+        triggerType:
+          type: string
+          enum: [create_task, cron_0000, retry]
+        title:
+          type: string
+        completedAt:
+          type: integer
+          format: int64
+          nullable: true
+        status:
+          type: integer
+          enum: [1, 2]
+        isExpired:
+          type: boolean
+        expiredAt:
+          type: integer
+          format: int64
+          nullable: true
+        isDeleted:
+          type: boolean
+        createdAt:
+          type: integer
+          format: int64
+        updatedAt:
+          type: integer
+          format: int64
+      required:
+        - _id
+        - userId
+        - taskId
+        - taskVersion
+        - todoDate
+        - triggerType
+        - title
+        - status
+        - isExpired
+        - isDeleted
+        - createdAt
+        - updatedAt
+    TodoStatusUpdateRequest:
+      type: object
+      properties:
+        status:
+          type: integer
+          enum: [1, 2]
+          description: 1=未完成，2=已完成
+      required: [status]
+    TodoListData:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        completedCount:
+          type: integer
+        uncompletedCount:
+          type: integer
+        total:
+          type: integer
+        list:
+          type: array
+          items:
+            $ref: '#/components/schemas/TodoDetail'
+      required: [date, completedCount, uncompletedCount, total, list]
+    TodoListResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/TodoListData'
+    TodoDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/TodoDetail'
+    CalendarDayStatus:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [completed, history_uncompleted, today_uncompleted, no_todo]
+        total:
+          type: integer
+        completedCount:
+          type: integer
+        uncompletedCount:
+          type: integer
+      required: [date, status, total, completedCount, uncompletedCount]
+    CalendarMonthData:
+      type: object
+      properties:
+        month:
+          type: string
+          pattern: '^\d{4}-\d{2}$'
+        today:
+          type: string
+          format: date
+        days:
+          type: array
+          items:
+            $ref: '#/components/schemas/CalendarDayStatus'
+      required: [month, today, days]
+    CalendarMonthResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/CalendarMonthData'
+    DailyRolloverData:
+      type: object
+      properties:
+        todoGenerated:
+          type: integer
+        expiredMarked:
+          type: integer
+      required: [todoGenerated, expiredMarked]
+    DailyRolloverResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/DailyRolloverData'
+    DbInitData:
+      type: object
+      properties:
+        collections:
+          type: array
+          items:
+            type: string
+        indexes:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        warnings:
+          type: array
+          items:
+            type: string
+      required: [collections, indexes, warnings]
+    DbInitResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/DbInitData'

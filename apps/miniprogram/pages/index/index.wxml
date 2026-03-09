@@ -1,29 +1,126 @@
-<!--index.wxml-->
-<view class="container">
-  <view class="title">快速了解云开发</view>
-  <view class="top_tip">免鉴权接口调用 免部署后台 高并发</view>
-  <view class="power" wx:key="title" wx:for="{{powerList}}" wx:for-item="power">
-    <view class="power_info" data-index="{{index}}" data-type="{{ power.type }}" bindtap="onClickPowerInfo">
-      <view class="power_info_text">
-        <view class="power_info_text_title">
-          {{power.title}}
-          <view class="power_info_text_tag" wx:if="{{power.tag}}">{{power.tag}}</view>
-        </view>
-        <view class="power_info_text_tip">{{power.tip}}</view>
-      </view>
-      <image wx:if="{{!power.showItem && power.item.length}}" class="power_info_more" src="../../images/arrow.svg"></image>
-      <image wx:if="{{power.showItem && power.item.length}}" class="power_info_less" src="../../images/arrow.svg"></image>
-      <image wx:if="{{!power.item.length}}" class="power_item_icon" src="../../images/arrow.svg"></image>
+<view class="page">
+  <view class="calendar-card">
+    <view class="calendar-head">
+      <button class="month-btn" data-delta="-1" bindtap="onMonthShift">‹</button>
+      <view class="month-text">{{currentMonth}}</view>
+      <button class="month-btn" data-delta="1" bindtap="onMonthShift">›</button>
     </view>
-    <view wx:if="{{power.showItem}}">
-      <view wx:key="title" wx:for="{{power.item}}">
-        <view class="line"></view>
-        <view class="power_item" bindtap="jumpPage" data-type="{{ item.type }}" data-page="{{item.page}}">
-          <view class="power_item_title">{{item.title}}</view>
-          <image class="power_item_icon" src="../../images/arrow.svg"></image>
+    <view class="week-row">
+      <text>一</text>
+      <text>二</text>
+      <text>三</text>
+      <text>四</text>
+      <text>五</text>
+      <text>六</text>
+      <text>日</text>
+    </view>
+    <view class="day-grid">
+      <block wx:for="{{calendarCells}}" wx:key="key">
+        <view
+          wx:if="{{item.type==='day'}}"
+          class="day-cell status-{{item.status}} {{item.isToday ? 'today' : ''}} {{item.isSelected ? 'selected' : ''}}"
+          data-date="{{item.date}}"
+          bindtap="onSelectDate"
+        >
+          <text>{{item.day}}</text>
         </view>
+        <view wx:else class="day-cell empty"></view>
+      </block>
+    </view>
+  </view>
+
+  <view class="progress-card">
+    <view class="progress-inline">{{selectedDate}} 已完成{{completedCount}}/共{{total}}</view>
+  </view>
+
+  <view class="todo-list" wx:if="{{todos.length>0}}">
+    <block wx:for="{{todos}}" wx:key="_id">
+      <view class="todo-card {{item.status===2 ? 'done' : ''}}">
+        <view class="todo-main">
+          <view class="todo-content-row">
+            <view class="todo-title">{{item.title}}</view>
+            <text wx:if="{{item.isExpired}}" class="expired-tag">已失效</text>
+          </view>
+          <button
+            class="check-btn {{item.status===2 ? 'checked' : ''}}"
+            data-todo-id="{{item._id}}"
+            data-status="{{item.status}}"
+            bindtap="onToggleTodoStatus"
+          >
+            {{item.status===2 ? '✓' : ''}}
+          </button>
+        </view>
+      </view>
+    </block>
+  </view>
+  <view class="empty-state" wx:else>
+    <view class="empty-title">这一天暂无待办</view>
+    <view class="empty-desc">点击下方按钮，添加你的第一个任务</view>
+  </view>
+
+  <view class="bottom-bar">
+    <button class="create-btn" bindtap="onOpenCreateTask">+ 新建任务</button>
+  </view>
+
+  <view wx:if="{{taskModalVisible}}" class="modal-mask" catchtouchmove="true">
+    <view class="modal-panel">
+      <view class="modal-header">
+        <text class="modal-title">{{taskModalMode==='create' ? '新建任务' : '编辑任务'}}</text>
+        <button class="close-btn" bindtap="onCloseTaskModal">×</button>
+      </view>
+
+      <view class="form-item">
+        <text class="label">任务标题 *</text>
+        <input class="input" placeholder="请输入任务标题" value="{{taskForm.title}}" bindinput="onTaskTitleInput" maxlength="64" />
+      </view>
+
+      <view class="form-item">
+        <text class="label">备注说明</text>
+        <textarea class="textarea" placeholder="请输入备注（可选）" value="{{taskForm.remark}}" bindinput="onTaskRemarkInput" maxlength="300"></textarea>
+      </view>
+
+      <view class="form-item row">
+        <view class="half">
+          <text class="label">开始日期 *</text>
+          <picker mode="date" value="{{taskForm.effectiveStartDate}}" bindchange="onTaskStartDateChange">
+            <view class="picker">{{taskForm.effectiveStartDate || '请选择'}}</view>
+          </picker>
+        </view>
+        <view class="half">
+          <text class="label">结束日期</text>
+          <picker mode="date" value="{{taskForm.effectiveEndDate}}" bindchange="onTaskEndDateChange" disabled="{{taskForm.longTerm}}">
+            <view class="picker {{taskForm.longTerm ? 'disabled' : ''}}">
+              {{taskForm.longTerm ? '长期有效' : (taskForm.effectiveEndDate || '请选择')}}
+            </view>
+          </picker>
+        </view>
+      </view>
+
+      <view class="form-item row align-center">
+        <text class="label">长期有效</text>
+        <switch checked="{{taskForm.longTerm}}" color="#4299E1" bindchange="onTaskLongTermSwitch" />
+      </view>
+
+      <view class="form-item row align-center">
+        <text class="label">任务状态</text>
+        <radio-group bindchange="onTaskStatusChange">
+          <label class="radio-item">
+            <radio value="1" checked="{{taskForm.status===1}}" color="#4299E1" />
+            <text>启用</text>
+          </label>
+          <label class="radio-item">
+            <radio value="0" checked="{{taskForm.status===0}}" color="#4299E1" />
+            <text>停用</text>
+          </label>
+        </radio-group>
+      </view>
+
+      <view class="modal-actions">
+        <button class="ghost-btn" bindtap="onCloseTaskModal">取消</button>
+        <button class="primary-btn" loading="{{taskModalSaving}}" bindtap="onSaveTask">保存</button>
       </view>
     </view>
   </view>
-  <cloud-tip-modal showTipProps="{{showTip}}" title="{{title}}" content="{{content}}"></cloud-tip-modal>
+
+  <view wx:if="{{errorText}}" class="error-bar">{{errorText}}</view>
 </view>

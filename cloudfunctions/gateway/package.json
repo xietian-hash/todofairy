@@ -1,0 +1,14 @@
+{
+  "name": "gateway",
+  "version": "1.0.0",
+  "description": "待办精灵小程序网关云函数",
+  "main": "index.js",
+  "scripts": {
+    "test:unit": "node ../../tests/unit/run-unit.js",
+    "test:api": "node ../../tests/api/run-api.js"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^9.0.2",
+    "wx-server-sdk": "~2.6.3"
+  }
+}
