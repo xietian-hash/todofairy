@@ -3,9 +3,9 @@
     "pages/index/index"
   ],
   "window": {
-    "backgroundColor": "#C9F0E4",
+    "backgroundColor": "#F5F7FA",
     "backgroundTextStyle": "light",
-    "navigationBarBackgroundColor": "#C9F0E4",
+    "navigationBarBackgroundColor": "#F5F7FA",
     "navigationBarTitleText": "待办精灵",
     "navigationBarTextStyle": "black"
   },

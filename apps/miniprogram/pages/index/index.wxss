@@ -3,19 +3,19 @@
   min-height: 100vh;
   box-sizing: border-box;
   padding: 20rpx 30rpx 140rpx;
-  background: #c9f0e4;
-  color: #1a3c34;
+  background: #f5f7fa;
+  color: #1e293b;
 }
 
 /* ===== 拟物公共卡片 ===== */
 .calendar-card,
 .progress-card,
 .todo-card {
-  background: #e0f7ef;
+  background: #ffffff;
   border-radius: 20rpx;
   border: none;
-  box-shadow: 6rpx 6rpx 12rpx rgba(0, 0, 0, 0.08),
-    -6rpx -6rpx 12rpx rgba(255, 255, 255, 0.9);
+  box-shadow: 6rpx 6rpx 14rpx rgba(0, 0, 0, 0.07),
+    -6rpx -6rpx 14rpx rgba(255, 255, 255, 1);
 }
 
 /* ===== 日历区域 ===== */
@@ -43,23 +43,23 @@
   align-items: center;
   justify-content: center;
   border-radius: 36rpx;
-  background: #e0f7ef;
-  color: #00c9a7;
+  background: #ffffff;
+  color: #21bfff;
   font-size: 40rpx;
   text-align: center;
-  box-shadow: 6rpx 6rpx 12rpx rgba(0, 0, 0, 0.08),
-    -6rpx -6rpx 12rpx rgba(255, 255, 255, 0.9);
+  box-shadow: 6rpx 6rpx 14rpx rgba(0, 0, 0, 0.07),
+    -6rpx -6rpx 14rpx rgba(255, 255, 255, 1);
 }
 
 .month-btn:active {
-  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.1),
-    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 0.7);
+  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.08),
+    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 1);
 }
 
 .month-text {
   font-size: 32rpx;
   font-weight: 600;
-  color: #1a3c34;
+  color: #1e293b;
 }
 
 .week-row {
@@ -67,7 +67,7 @@
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   text-align: center;
-  color: #5b8a7a;
+  color: #64748b;
   font-size: 22rpx;
 }
 
@@ -87,9 +87,9 @@
   align-items: center;
   justify-content: center;
   font-size: 24rpx;
-  background: #e0f7ef;
-  box-shadow: 3rpx 3rpx 6rpx rgba(0, 0, 0, 0.06),
-    -3rpx -3rpx 6rpx rgba(255, 255, 255, 0.8);
+  background: #ffffff;
+  box-shadow: 3rpx 3rpx 7rpx rgba(0, 0, 0, 0.05),
+    -3rpx -3rpx 7rpx rgba(255, 255, 255, 1);
   position: relative;
 }
 
@@ -107,20 +107,20 @@
   width: 6rpx;
   height: 6rpx;
   border-radius: 50%;
-  background: #00c9a7;
+  background: #21bfff;
   margin-top: 2rpx;
 }
 
 .day-cell.selected {
-  background: #e6fff8;
+  background: #e0f5ff;
   font-weight: 600;
-  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.1),
-    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 0.7);
+  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.08),
+    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 1);
 }
 
 /* ===== 日历四态 ===== */
 .status-completed {
-  background: #a7f3d0;
+  background: #bae6fd;
 }
 
 .status-history_uncompleted {
@@ -132,7 +132,7 @@
 }
 
 .status-no_todo {
-  background: #d1e5db;
+  background: #f1f5f9;
 }
 
 /* ===== 进度卡片 ===== */
@@ -144,7 +144,7 @@
 .progress-inline {
   font-size: 26rpx;
   font-weight: 500;
-  color: #1a3c34;
+  color: #1e293b;
 }
 
 /* ===== 待办列表 ===== */
@@ -161,12 +161,12 @@
 }
 
 .todo-card:active {
-  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.1),
-    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 0.7);
+  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.08),
+    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 1);
 }
 
 .todo-card.done {
-  background: #d1f5e8;
+  background: #f0fdfa;
 }
 
 .todo-main {
@@ -187,7 +187,7 @@
   flex: 0 0 44rpx;
   border-radius: 22rpx;
   border: none;
-  background: #e0f7ef;
+  background: #ffffff;
   color: transparent;
   display: flex;
   align-items: center;
@@ -195,16 +195,16 @@
   font-size: 24rpx;
   line-height: 1;
   padding: 0;
-  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.1),
-    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 0.7);
+  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.08),
+    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 1);
   transition: box-shadow 0.2s ease, background 0.2s ease;
 }
 
 .check-btn.checked {
-  background: #10b981;
+  background: #21bfff;
   color: #ffffff;
-  box-shadow: 6rpx 6rpx 12rpx rgba(0, 0, 0, 0.08),
-    -6rpx -6rpx 12rpx rgba(255, 255, 255, 0.9);
+  box-shadow: 6rpx 6rpx 14rpx rgba(0, 0, 0, 0.07),
+    -6rpx -6rpx 14rpx rgba(255, 255, 255, 1);
 }
 
 /* ===== 待办内容行 ===== */
@@ -228,7 +228,7 @@
 
 .todo-card.done .todo-title {
   text-decoration: line-through;
-  color: #5b8a7a;
+  color: #64748b;
 }
 
 .expired-tag {
@@ -249,22 +249,22 @@
   padding: 60rpx 20rpx;
   border-radius: 20rpx;
   text-align: center;
-  background: #e0f7ef;
+  background: #ffffff;
   border: none;
-  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.06),
-    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 0.6);
+  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.05),
+    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 1);
 }
 
 .empty-title {
   font-size: 30rpx;
   font-weight: 500;
-  color: #1a3c34;
+  color: #1e293b;
 }
 
 .empty-desc {
   margin-top: 10rpx;
   font-size: 24rpx;
-  color: #5b8a7a;
+  color: #64748b;
 }
 
 /* ===== 底部新建任务按钮（浮雕） ===== */
@@ -280,19 +280,19 @@
   line-height: 88rpx;
   padding: 0;
   border-radius: 60rpx;
-  background: #00c9a7;
+  background: #21bfff;
   color: #ffffff;
   font-size: 30rpx;
   font-weight: 500;
-  box-shadow: 6rpx 6rpx 12rpx rgba(0, 0, 0, 0.08),
-    -6rpx -6rpx 12rpx rgba(255, 255, 255, 0.9);
+  box-shadow: 6rpx 6rpx 14rpx rgba(0, 0, 0, 0.07),
+    -6rpx -6rpx 14rpx rgba(255, 255, 255, 1);
   transition: box-shadow 0.15s ease;
 }
 
 .create-btn:active {
-  background: #00b396;
-  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.1),
-    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 0.7);
+  background: #0ea5e9;
+  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.08),
+    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 1);
 }
 
 /* ===== 弹窗遮罩 ===== */
@@ -315,7 +315,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  background: #e0f7ef;
+  background: #ffffff;
   border-radius: 28rpx 28rpx 0 0;
   box-sizing: border-box;
 }
@@ -333,7 +333,7 @@
 .modal-title {
   font-size: 32rpx;
   font-weight: 600;
-  color: #1a3c34;
+  color: #1e293b;
 }
 
 .close-btn {
@@ -351,16 +351,16 @@
   flex-shrink: 0;
   overflow: hidden;
   line-height: 1;
-  background: #e0f7ef;
+  background: #ffffff;
   font-size: 38rpx;
-  color: #5b8a7a;
-  box-shadow: 6rpx 6rpx 12rpx rgba(0, 0, 0, 0.08),
-    -6rpx -6rpx 12rpx rgba(255, 255, 255, 0.9);
+  color: #64748b;
+  box-shadow: 6rpx 6rpx 14rpx rgba(0, 0, 0, 0.07),
+    -6rpx -6rpx 14rpx rgba(255, 255, 255, 1);
 }
 
 .close-btn:active {
-  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.1),
-    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 0.7);
+  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.08),
+    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 1);
 }
 
 /* ===== 弹窗内容区 ===== */
@@ -399,7 +399,7 @@
 
 .label {
   font-size: 24rpx;
-  color: #5b8a7a;
+  color: #64748b;
 }
 
 /* ===== 输入框（拟物凹陷） ===== */
@@ -412,22 +412,22 @@
   padding: 18rpx 20rpx;
   box-sizing: border-box;
   font-size: 28rpx;
-  color: #1a3c34;
+  color: #1e293b;
   min-height: 80rpx;
-  background: #e0f7ef;
-  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.1),
-    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 0.7);
+  background: #ffffff;
+  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.08),
+    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 1);
 }
 
 .input:focus,
 .textarea:focus {
-  box-shadow: inset 4rpx 4rpx 10rpx rgba(0, 0, 0, 0.12),
-    inset -4rpx -4rpx 10rpx rgba(255, 255, 255, 0.6);
+  box-shadow: inset 4rpx 4rpx 10rpx rgba(0, 0, 0, 0.1),
+    inset -4rpx -4rpx 10rpx rgba(255, 255, 255, 1);
 }
 
 .picker.disabled {
-  background: #d1e5db;
-  color: #93c5b4;
+  background: #f1f5f9;
+  color: #94a3b8;
 }
 
 .textarea {
@@ -441,7 +441,7 @@
   align-items: center;
   gap: 8rpx;
   font-size: 24rpx;
-  color: #1a3c34;
+  color: #1e293b;
 }
 
 /* ===== 弹窗底部按钮（拟物） ===== */
@@ -452,7 +452,7 @@
   padding: 16rpx 30rpx 24rpx;
   box-sizing: border-box;
   border-top: none;
-  background: #e0f7ef;
+  background: #ffffff;
 }
 
 .ghost-btn,
@@ -467,29 +467,29 @@
 }
 
 .ghost-btn {
-  background: #e0f7ef;
+  background: #ffffff;
   border: none;
-  color: #00c9a7;
-  box-shadow: 6rpx 6rpx 12rpx rgba(0, 0, 0, 0.08),
-    -6rpx -6rpx 12rpx rgba(255, 255, 255, 0.9);
+  color: #21bfff;
+  box-shadow: 6rpx 6rpx 14rpx rgba(0, 0, 0, 0.07),
+    -6rpx -6rpx 14rpx rgba(255, 255, 255, 1);
 }
 
 .ghost-btn:active {
-  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.1),
-    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 0.7);
+  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.08),
+    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 1);
 }
 
 .primary-btn {
-  background: #00c9a7;
+  background: #21bfff;
   color: #ffffff;
-  box-shadow: 6rpx 6rpx 12rpx rgba(0, 0, 0, 0.08),
-    -6rpx -6rpx 12rpx rgba(255, 255, 255, 0.9);
+  box-shadow: 6rpx 6rpx 14rpx rgba(0, 0, 0, 0.07),
+    -6rpx -6rpx 14rpx rgba(255, 255, 255, 1);
 }
 
 .primary-btn:active {
-  background: #00b396;
-  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.1),
-    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 0.7);
+  background: #0ea5e9;
+  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.08),
+    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 1);
 }
 
 /* ===== 错误提示条 ===== */
@@ -506,6 +506,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 6rpx 6rpx 12rpx rgba(0, 0, 0, 0.08),
-    -6rpx -6rpx 12rpx rgba(255, 255, 255, 0.9);
+  box-shadow: 6rpx 6rpx 14rpx rgba(0, 0, 0, 0.07),
+    -6rpx -6rpx 14rpx rgba(255, 255, 255, 1);
 }
