@@ -28,6 +28,7 @@ Page({
     completedCount: 0,
     uncompletedCount: 0,
     total: 0,
+    progressPercent: 0,
     taskModalVisible: false,
     taskModalMode: "create",
     editingTaskId: "",
@@ -115,11 +116,14 @@ Page({
   async loadTodos() {
     const { selectedDate } = this.data;
     const data = await api.getTodos(selectedDate);
+    const completed = data.completedCount || 0;
+    const total = data.total || 0;
     this.setData({
       todos: data.list || [],
-      completedCount: data.completedCount || 0,
+      completedCount: completed,
       uncompletedCount: data.uncompletedCount || 0,
-      total: data.total || 0,
+      total,
+      progressPercent: total > 0 ? Math.round((completed / total) * 100) : 0,
     });
   },
 

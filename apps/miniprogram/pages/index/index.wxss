@@ -112,8 +112,9 @@
 }
 
 .day-cell.selected {
-  background: #e0f5ff;
+  background: linear-gradient(135deg, #e0f5ff, #ede9fe);
   font-weight: 600;
+  border: 2rpx solid #21bfff;
   box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.08),
     inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 1);
 }
@@ -141,10 +142,39 @@
   padding: 20rpx;
 }
 
-.progress-inline {
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.progress-label {
   font-size: 26rpx;
   font-weight: 500;
   color: #1e293b;
+}
+
+.progress-count {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #21bfff;
+}
+
+.progress-track {
+  height: 16rpx;
+  border-radius: 8rpx;
+  background: #ffffff;
+  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.08),
+    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 1);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 8rpx;
+  background: linear-gradient(90deg, #21bfff, #6c5ce7);
+  transition: width 0.3s ease;
 }
 
 /* ===== 待办列表 ===== */
@@ -157,6 +187,8 @@
 
 .todo-card {
   padding: 20rpx;
+  padding-left: 24rpx;
+  border-left: 4rpx solid #21bfff;
   transition: box-shadow 0.15s ease;
 }
 
@@ -167,6 +199,11 @@
 
 .todo-card.done {
   background: #f0fdfa;
+  border-left-color: #10b981;
+}
+
+.todo-card.expired {
+  border-left-color: #94a3b8;
 }
 
 .todo-main {
@@ -201,7 +238,7 @@
 }
 
 .check-btn.checked {
-  background: #21bfff;
+  background: linear-gradient(135deg, #21bfff, #6c5ce7);
   color: #ffffff;
   box-shadow: 6rpx 6rpx 14rpx rgba(0, 0, 0, 0.07),
     -6rpx -6rpx 14rpx rgba(255, 255, 255, 1);
@@ -280,7 +317,7 @@
   line-height: 88rpx;
   padding: 0;
   border-radius: 60rpx;
-  background: #21bfff;
+  background: linear-gradient(135deg, #21bfff, #6c5ce7);
   color: #ffffff;
   font-size: 30rpx;
   font-weight: 500;
@@ -290,7 +327,7 @@
 }
 
 .create-btn:active {
-  background: #0ea5e9;
+  background: linear-gradient(135deg, #0ea5e9, #5b4bd5);
   box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.08),
     inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 1);
 }
@@ -480,14 +517,14 @@
 }
 
 .primary-btn {
-  background: #21bfff;
+  background: linear-gradient(135deg, #21bfff, #6c5ce7);
   color: #ffffff;
   box-shadow: 6rpx 6rpx 14rpx rgba(0, 0, 0, 0.07),
     -6rpx -6rpx 14rpx rgba(255, 255, 255, 1);
 }
 
 .primary-btn:active {
-  background: #0ea5e9;
+  background: linear-gradient(135deg, #0ea5e9, #5b4bd5);
   box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.08),
     inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 1);
 }

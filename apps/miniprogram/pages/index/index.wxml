@@ -31,12 +31,18 @@
   </view>
 
   <view class="progress-card">
-    <view class="progress-inline">{{selectedDate}} 已完成{{completedCount}}/共{{total}}</view>
+    <view class="progress-header">
+      <text class="progress-label">{{selectedDate}}</text>
+      <text class="progress-count">{{completedCount}}/{{total}}</text>
+    </view>
+    <view class="progress-track">
+      <view class="progress-fill" style="width: {{progressPercent}}%"></view>
+    </view>
   </view>
 
   <view class="todo-list" wx:if="{{todos.length>0}}">
     <block wx:for="{{todos}}" wx:key="_id">
-      <view class="todo-card {{item.status===2 ? 'done' : ''}}">
+      <view class="todo-card {{item.status===2 ? 'done' : ''}} {{item.isExpired ? 'expired' : ''}}">
         <view class="todo-main">
           <view class="todo-content-row">
             <view class="todo-title">{{item.title}}</view>
