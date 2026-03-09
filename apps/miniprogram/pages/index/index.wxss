@@ -20,7 +20,15 @@
 
 /* ===== 日历区域 ===== */
 .calendar-card {
-  padding: 20rpx;
+  padding: 0 20rpx 20rpx;
+  overflow: hidden;
+}
+
+.calendar-banner {
+  margin: 0 -20rpx;
+  padding: 20rpx 20rpx;
+  background: linear-gradient(135deg, #21bfff, #6c5ce7);
+  border-radius: 20rpx 20rpx 0 0;
 }
 
 .calendar-head {
@@ -43,23 +51,22 @@
   align-items: center;
   justify-content: center;
   border-radius: 36rpx;
-  background: #ffffff;
-  color: #21bfff;
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
   font-size: 40rpx;
   text-align: center;
-  box-shadow: 6rpx 6rpx 14rpx rgba(0, 0, 0, 0.07),
-    -6rpx -6rpx 14rpx rgba(255, 255, 255, 1);
+  box-shadow: none;
 }
 
 .month-btn:active {
-  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.08),
-    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 1);
+  background: rgba(255, 255, 255, 0.35);
+  box-shadow: none;
 }
 
 .month-text {
   font-size: 32rpx;
   font-weight: 600;
-  color: #1e293b;
+  color: #ffffff;
 }
 
 .week-row {
