@@ -36,6 +36,7 @@ Page({
     taskModalSaving: false,
     taskModalClosing: false,
     taskModalAnimation: null,
+    taskTitleFocus: false,
     statusBarHeight: 0,
     navBarHeight: 44,
   },
@@ -96,8 +97,7 @@ Page({
   async loadPageData() {
     this.setData({ loading: true, errorText: "" });
     try {
-      await this.loadCalendar();
-      await this.loadTodos();
+      await Promise.all([this.loadCalendar(), this.loadTodos()]);
     } catch (err) {
       this.setData({
         errorText: err.message || "加载失败",
@@ -147,10 +147,12 @@ Page({
   async onSelectDate(e) {
     const { date } = e.currentTarget.dataset;
     if (!date) return;
+    const { currentMonth, today, dayStatusMap } = this.data;
+    const cells = listMonthGrid(currentMonth, date, today, dayStatusMap);
     this.setData({
       selectedDate: date,
+      calendarCells: cells,
     });
-    await this.loadCalendar();
     await this.loadTodos();
   },
 
@@ -159,13 +161,42 @@ Page({
     if (!todoId) return;
     const currentStatus = Number(status || 1);
     const nextStatus = currentStatus === 2 ? 1 : 2;
+
+    // 快照：用于失败回滚
+    const prevTodos = this.data.todos;
+    const prevCompleted = this.data.completedCount;
+    const prevUncompleted = this.data.uncompletedCount;
+    const prevTotal = this.data.total;
+    const prevPercent = this.data.progressPercent;
+
+    // 乐观更新：立即刷新 UI
+    const newTodos = prevTodos.map((t) =>
+      t._id === todoId ? { ...t, status: nextStatus } : t
+    );
+    const delta = nextStatus === 2 ? 1 : -1;
+    const newCompleted = prevCompleted + delta;
+    const newUncompleted = prevUncompleted - delta;
+    this.setData({
+      todos: newTodos,
+      completedCount: newCompleted,
+      uncompletedCount: newUncompleted,
+      progressPercent: prevTotal > 0 ? Math.round((newCompleted / prevTotal) * 100) : 0,
+    });
+
     try {
       await api.updateTodoStatus(todoId, nextStatus);
-      await this.loadTodos();
-      await this.loadCalendar();
+      // 静默刷新：同步服务端最新数据
+      Promise.all([this.loadTodos(), this.loadCalendar()]).catch(() => {});
     } catch (err) {
+      // 回滚
+      this.setData({
+        todos: prevTodos,
+        completedCount: prevCompleted,
+        uncompletedCount: prevUncompleted,
+        progressPercent: prevPercent,
+      });
       wx.showToast({
-        title: err.message || "操作失败",
+        title: "操作失败",
         icon: "none",
       });
     }
@@ -199,6 +230,7 @@ Page({
       openAnimation.translateY("0").step();
       this.setData({
         taskModalAnimation: openAnimation.export(),
+        taskTitleFocus: true,
       });
     });
   },
@@ -226,6 +258,7 @@ Page({
         taskModalClosing: false,
         taskModalAnimation: null,
         taskModalSaving: false,
+        taskTitleFocus: false,
       });
     }, TASK_MODAL_CLOSE_DELAY);
   },

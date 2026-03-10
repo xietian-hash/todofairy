@@ -147,7 +147,9 @@
 | 聚焦态 | 凹陷阴影加深：`inset 4rpx 4rpx 10rpx rgba(0,0,0,0.1), inset -4rpx -4rpx 10rpx rgba(255,255,255,1)`，底部出现 `2rpx` 品牌色指示线 |
 | 错误态 | 底部指示线改为 `#EF4444`，并在输入框下方显示错误提示文案（字色 `#B91C1C`，字号 `22rpx`） |
 | placeholder | 文字色 `#94A3B8`（统一适用于 input/textarea 原生 placeholder 及 picker 空值提示文案） |
-| 结束日期 | 可为空；为空时显示"留空即长期有效"，文字色 `#94A3B8` |
+| 结束日期 | 可为空；为空时显示"长期有效"，文字色 `#94A3B8` |
+| 自动聚焦 | 打开新建弹窗时标题输入框自动获得焦点（`focus=true`），弹出键盘 |
+| 键盘适配 | 弹窗内 input/textarea 设置 `adjust-position=false`，防止键盘弹出时推动弹窗 |
 
 ### 5）日历横幅（Calendar Banner）
 

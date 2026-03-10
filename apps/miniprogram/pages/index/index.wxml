@@ -84,11 +84,11 @@
       </view>
       <scroll-view class="modal-body" scroll-y enhanced="{{true}}" show-scrollbar="{{false}}">
         <view class="form-item">
-          <input class="input" placeholder="请输入任务标题" value="{{taskForm.title}}" bindinput="onTaskTitleInput" maxlength="64" />
+          <input class="input" placeholder="请输入任务标题" value="{{taskForm.title}}" bindinput="onTaskTitleInput" maxlength="64" focus="{{taskTitleFocus}}" adjust-position="{{false}}" />
         </view>
 
         <view class="form-item">
-          <textarea class="textarea" placeholder="请输入备注（可选）" value="{{taskForm.remark}}" bindinput="onTaskRemarkInput" maxlength="300"></textarea>
+          <textarea class="textarea" placeholder="请输入备注（可选）" value="{{taskForm.remark}}" bindinput="onTaskRemarkInput" maxlength="300" adjust-position="{{false}}"></textarea>
         </view>
 
         <view class="form-item row">
