@@ -161,11 +161,28 @@
 }
 
 .status-today_uncompleted {
-  background: #fde68a;
+  background: #f1f5f9;
 }
 
 .status-no_todo {
   background: #f1f5f9;
+}
+
+/* ===== 选中态保留原状态背景色 ===== */
+.day-cell.status-completed.selected {
+  background: #bae6fd;
+  font-weight: 600;
+  border: 2rpx solid #21bfff;
+  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.08),
+    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 1);
+}
+
+.day-cell.status-history_uncompleted.selected {
+  background: #fecaca;
+  font-weight: 600;
+  border: 2rpx solid #21bfff;
+  box-shadow: inset 4rpx 4rpx 8rpx rgba(0, 0, 0, 0.08),
+    inset -4rpx -4rpx 8rpx rgba(255, 255, 255, 1);
 }
 
 /* ===== 进度卡片 ===== */
@@ -479,7 +496,7 @@
   border-radius: 16rpx;
   padding: 18rpx 20rpx;
   box-sizing: border-box;
-  font-size: 28rpx;
+  font-size: 32rpx;
   color: #1e293b;
   min-height: 80rpx;
   background: #ffffff;
@@ -495,6 +512,10 @@
 
 .picker.disabled {
   background: #f1f5f9;
+  color: #94a3b8;
+}
+
+.picker-placeholder {
   color: #94a3b8;
 }
 

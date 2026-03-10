@@ -84,12 +84,10 @@
       </view>
       <scroll-view class="modal-body" scroll-y enhanced="{{true}}" show-scrollbar="{{false}}">
         <view class="form-item">
-          <text class="label">任务标题 *</text>
           <input class="input" placeholder="请输入任务标题" value="{{taskForm.title}}" bindinput="onTaskTitleInput" maxlength="64" />
         </view>
 
         <view class="form-item">
-          <text class="label">备注说明</text>
           <textarea class="textarea" placeholder="请输入备注（可选）" value="{{taskForm.remark}}" bindinput="onTaskRemarkInput" maxlength="300"></textarea>
         </view>
 
@@ -97,14 +95,14 @@
           <view class="half">
             <text class="label">开始日期 *</text>
             <picker mode="date" value="{{taskForm.effectiveStartDate}}" bindchange="onTaskStartDateChange">
-              <view class="picker">{{taskForm.effectiveStartDate || '请选择'}}</view>
+              <view class="picker {{taskForm.effectiveStartDate ? '' : 'picker-placeholder'}}">{{taskForm.effectiveStartDate || '请选择'}}</view>
             </picker>
           </view>
           <view class="half">
             <text class="label">结束日期</text>
             <picker mode="date" value="{{taskForm.effectiveEndDate}}" bindchange="onTaskEndDateChange">
-              <view class="picker">
-                {{taskForm.effectiveEndDate || '留空即长期有效'}}
+              <view class="picker {{taskForm.effectiveEndDate ? '' : 'picker-placeholder'}}">
+                {{taskForm.effectiveEndDate || '长期有效'}}
               </view>
             </picker>
           </view>

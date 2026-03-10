@@ -63,8 +63,10 @@
 |---|---|---|
 | 已完成 | `completedCount=todoCount && todoCount>0` | `#BAE6FD`（天蓝） |
 | 历史未完成 | `targetDate<today && uncompletedCount>0` | `#FECACA`（珊瑚粉） |
-| 当日未完成 | `targetDate=today && uncompletedCount>0` | `#FDE68A`（明黄） |
+| 当日未完成 | `targetDate=today && uncompletedCount>0` | `#F1F5F9`（浅灰，与无待办一致，仅靠今日圆点区分） |
 | 无待办 | `todoCount=0` | `#F1F5F9`（浅灰） |
+
+> 选中态规则：选中已完成（`#BAE6FD`）或历史未完成（`#FECACA`）日期时，保留原状态背景色 + 品牌蓝边框 + 凹陷阴影；其他状态选中时使用渐变背景。
 
 ### 4）尺寸令牌
 
@@ -140,11 +142,12 @@
 
 | 项 | 规范 |
 |---|---|
-| 基础 | 高度 `80rpx`，圆角 `--radius-input`（`16rpx`），背景 `--color-bg-card`，应用 `--shadow-concave`（嵌入凹陷），无描边 |
+| 基础 | 高度 `80rpx`，圆角 `--radius-input`（`16rpx`），背景 `--color-bg-card`，应用 `--shadow-concave`（嵌入凹陷），无描边，字号 `32rpx` |
+| 标签 | 任务标题和备注说明不显示 label；日期选择器保留 label（字号 `24rpx`，色 `#64748B`） |
 | 聚焦态 | 凹陷阴影加深：`inset 4rpx 4rpx 10rpx rgba(0,0,0,0.1), inset -4rpx -4rpx 10rpx rgba(255,255,255,1)`，底部出现 `2rpx` 品牌色指示线 |
 | 错误态 | 底部指示线改为 `#EF4444`，并在输入框下方显示错误提示文案（字色 `#B91C1C`，字号 `22rpx`） |
-| placeholder | 文字色 `#94A3B8` |
-| 结束日期 | 可为空；为空时表示长期有效 |
+| placeholder | 文字色 `#94A3B8`（统一适用于 input/textarea 原生 placeholder 及 picker 空值提示文案） |
+| 结束日期 | 可为空；为空时显示"留空即长期有效"，文字色 `#94A3B8` |
 
 ### 5）日历横幅（Calendar Banner）
 
