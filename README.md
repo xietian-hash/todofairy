@@ -72,7 +72,7 @@ node tests/api/run-api.js
 2. 上传并部署 `cloudfunctions/gateway`
 3. 首次部署后调用内部接口初始化集合：
    - `POST /api/v1/internal/db-init`（需 `x-internal-key`）
-4. 配置定时触发 `POST /api/v1/internal/daily-rollover`
+4. 定时触发已通过 `cloudfunctions/gateway/config.json` 中的 `triggers` 配置，部署云函数后自动生效（每日 00:00 执行日切任务）
 
 ## 参考文档
 

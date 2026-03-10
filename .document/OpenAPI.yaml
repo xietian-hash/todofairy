@@ -256,7 +256,9 @@ paths:
       tags:
         - 内部任务
       summary: 日切任务（生成当日待办 + 标记历史未完成为失效）
-      description: 仅供定时触发调用，需要内部密钥
+      description: |-
+        每日 00:00 由云函数定时触发器（config.json triggers）自动调用，也可通过 HTTP 手动调用（需内部密钥）。
+        定时触发器走内部路径直接执行，不经过 HTTP 鉴权；HTTP 调用仍需 x-internal-key。
       parameters:
         - name: x-internal-key
           in: header

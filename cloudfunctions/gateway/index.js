@@ -4,8 +4,39 @@ const { AppError, ERROR_CODES } = require("./lib/errors");
 const { normalizeEvent } = require("./lib/request");
 const { ensureRoute } = require("./lib/router");
 const { authenticateRequest } = require("./lib/auth");
+const internalService = require("./lib/services/internal-service");
 
 exports.main = async (event = {}, context = {}) => {
+  // 定时触发器入口：由云平台 cron 调度，无需鉴权
+  if (event.Type === "Timer" && event.TriggerName === "dailyRollover") {
+    const traceId = `timer-${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
+    try {
+      const data = await internalService.dailyRollover();
+      console.log(
+        JSON.stringify({
+          level: "info",
+          traceId,
+          action: "Timer:dailyRollover",
+          result: "success",
+          data,
+        })
+      );
+      return { code: 0, message: "ok", data, traceId };
+    } catch (err) {
+      console.error(
+        JSON.stringify({
+          level: "error",
+          traceId,
+          action: "Timer:dailyRollover",
+          result: "failed",
+          message: err.message || "日切执行异常",
+          stack: err.stack || "",
+        })
+      );
+      return { code: 500, message: "日切执行异常", traceId };
+    }
+  }
+
   const wxContext = cloud.getWXContext();
   let request = null;
 
