@@ -3,6 +3,7 @@ const { assertString, assertDate, assertDateRange, assertEnum } = require("../va
 const { todayStr, getNowMs, isDateInRange } = require("../date");
 const taskRepo = require("../repositories/task-repository");
 const todoRepo = require("../repositories/todo-repository");
+const tagRepo = require("../repositories/tag-repository");
 const todoService = require("./todo-service");
 
 function normalizeTaskPayload(payload = {}) {
@@ -32,12 +33,38 @@ function normalizeTaskPayload(payload = {}) {
   };
 }
 
+async function resolveTaskTag(userId, rawTagId) {
+  if (rawTagId === undefined || rawTagId === null || rawTagId === "") {
+    return {
+      tagId: null,
+      tagName: null,
+    };
+  }
+
+  assertString(rawTagId, "标签ID", { required: true, minLen: 1, maxLen: 64 });
+  const tagId = rawTagId.trim();
+  const tag = await tagRepo.getTagById(userId, tagId);
+  if (!tag) {
+    throw new AppError(400, ERROR_CODES.VALIDATION_ERROR, "标签不存在或不可用");
+  }
+  if (!(tag.name || tag.tagName)) {
+    throw new AppError(400, ERROR_CODES.VALIDATION_ERROR, "标签名称不能为空");
+  }
+
+  return {
+    tagId: tag._id,
+    tagName: tag.name || tag.tagName,
+  };
+}
+
 async function createTask(userId, payload) {
   const now = getNowMs();
   const normalized = normalizeTaskPayload(payload);
+  const tag = await resolveTaskTag(userId, payload && payload.tagId);
   const taskData = {
     userId,
     ...normalized,
+    ...tag,
     isDeleted: false,
     version: 1,
     createdAt: now,
@@ -62,13 +89,67 @@ async function getTask(userId, taskId) {
   return task;
 }
 
+function normalizePageNo(value) {
+  const pageNo = Number(value || 1);
+  if (!Number.isInteger(pageNo) || pageNo < 1) {
+    throw new AppError(400, ERROR_CODES.VALIDATION_ERROR, "页码必须是大于等于1的整数");
+  }
+  return pageNo;
+}
+
+function normalizePageSize(value) {
+  const pageSize = Number(value || 20);
+  if (!Number.isInteger(pageSize) || pageSize < 1 || pageSize > 100) {
+    throw new AppError(400, ERROR_CODES.VALIDATION_ERROR, "每页条数必须是1-100之间的整数");
+  }
+  return pageSize;
+}
+
+function normalizeTaskListStatus(value) {
+  if (value === undefined || value === null || value === "") {
+    return null;
+  }
+  const status = Number(value);
+  assertEnum(status, "任务状态", [0, 1]);
+  return status;
+}
+
+async function listTasks(userId, query = {}) {
+  const pageNo = normalizePageNo(query.pageNo);
+  const pageSize = normalizePageSize(query.pageSize);
+  const status = normalizeTaskListStatus(query.status);
+  const [total, list] = await Promise.all([
+    taskRepo.countTasksByUser(userId, status),
+    taskRepo.listTasksByUser(userId, {
+      status,
+      pageNo,
+      pageSize,
+    }),
+  ]);
+
+  return {
+    pageNo,
+    pageSize,
+    total,
+    list,
+  };
+}
+
 async function updateTask(userId, taskId, payload) {
   const current = await getTask(userId, taskId);
   const normalized = normalizeTaskPayload(payload);
+  const hasTagId = Object.prototype.hasOwnProperty.call(payload || {}, "tagId");
+  const tag = hasTagId
+    ? await resolveTaskTag(userId, payload.tagId)
+    : {
+        tagId: current.tagId || null,
+        tagName: current.tagName || null,
+      };
   const now = getNowMs();
 
   await taskRepo.updateTaskById(taskId, userId, {
     ...normalized,
+    ...tag,
     version: (current.version || 1) + 1,
     updatedAt: now,
   });
@@ -84,6 +165,8 @@ async function updateTask(userId, taskId, payload) {
     if (todayTodo && todayTodo.status === 1) {
       await todoRepo.updateTodoByTaskAndDate(userId, taskId, today, {
         title: latest.title,
+        tagId: latest.tagId || null,
+        tagName: latest.tagName || null,
         taskVersion: latest.version,
         updatedAt: now,
       });
@@ -110,6 +193,7 @@ async function deleteTask(userId, taskId) {
 
 module.exports = {
   createTask,
+  listTasks,
   getTask,
   updateTask,
   deleteTask,

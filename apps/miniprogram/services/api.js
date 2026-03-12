@@ -16,6 +16,13 @@ function getMonthCalendar(month) {
   });
 }
 
+function getTagOptions() {
+  return request({
+    path: "/api/v1/tags/options",
+    method: "GET",
+  });
+}
+
 function getTodos(date, status) {
   return request({
     path: "/api/v1/todos",
@@ -50,6 +57,18 @@ function createTask(payload) {
   });
 }
 
+function getTasks(pageNo, pageSize, status) {
+  return request({
+    path: "/api/v1/tasks",
+    method: "GET",
+    query: {
+      pageNo: pageNo || 1,
+      pageSize: pageSize || 20,
+      status: status === undefined || status === null ? "" : status,
+    },
+  });
+}
+
 function getTask(taskId) {
   return request({
     path: `/api/v1/tasks/${taskId}`,
@@ -68,10 +87,12 @@ function updateTask(taskId, payload) {
 module.exports = {
   login,
   getMonthCalendar,
+  getTagOptions,
   getTodos,
   updateTodoStatus,
   deleteTodo,
   createTask,
+  getTasks,
   getTask,
   updateTask,
 };

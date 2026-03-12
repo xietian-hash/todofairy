@@ -1,9 +1,12 @@
+const createUiToastController = require("./utils/ui-toast");
+
 App({
   onLaunch() {
     this.globalData = {
       env: "cloud1-9gl3vfr0a0dabd7d",
       token: "",
     };
+    this.uiToast = createUiToastController();
     if (!wx.cloud) {
       console.error("请使用 2.2.3 或以上的基础库以使用云能力");
       return;

@@ -3,6 +3,30 @@ const { getNowMs, todayStr, compareDateStr } = require("../date");
 const { assertEnum } = require("../validators");
 const todoRepo = require("../repositories/todo-repository");
 
+function sortTodosByTag(todos) {
+  return [...todos].sort((a, b) => {
+    const aHasTag = Boolean(a.tagName);
+    const bHasTag = Boolean(b.tagName);
+    if (aHasTag !== bHasTag) {
+      return aHasTag ? -1 : 1;
+    }
+
+    if (aHasTag && bHasTag) {
+      const byTag = String(a.tagName).localeCompare(String(b.tagName), "zh-Hans-CN");
+      if (byTag !== 0) {
+        return byTag;
+      }
+    }
+
+    const aCreatedAt = Number(a.createdAt) || 0;
+    const bCreatedAt = Number(b.createdAt) || 0;
+    if (aCreatedAt !== bCreatedAt) {
+      return aCreatedAt - bCreatedAt;
+    }
+    return String(a._id || "").localeCompare(String(b._id || ""));
+  });
+}
+
 async function ensureTodoForTaskDate(task, todoDate, triggerType) {
   const existed = await todoRepo.findTodoByTaskAndDate(task.userId, task._id, todoDate);
   if (existed) {
@@ -20,6 +44,8 @@ async function ensureTodoForTaskDate(task, todoDate, triggerType) {
     todoDate,
     triggerType,
     title: task.title,
+    tagId: task.tagId || null,
+    tagName: task.tagName || null,
     completedAt: null,
     status: 1,
     isExpired: false,
@@ -43,7 +69,7 @@ async function ensureTodoForTaskDate(task, todoDate, triggerType) {
 async function listTodos(userId, query) {
   const date = query.date || todayStr();
   const status = query.status ? Number(query.status) : null;
-  const todos = await todoRepo.listTodosByDate(userId, date, status);
+  const todos = sortTodosByTag(await todoRepo.listTodosByDate(userId, date, status));
   const completedCount = todos.filter((item) => item.status === 2).length;
   const uncompletedCount = todos.filter((item) => item.status === 1).length;
   return {

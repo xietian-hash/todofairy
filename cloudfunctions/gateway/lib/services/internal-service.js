@@ -8,6 +8,7 @@ const COLLECTIONS = [
   "user",
   "user_identity",
   "user_credential",
+  "user_tag",
   "task",
   "todo",
   "todo_generation_log",
@@ -18,6 +19,15 @@ const INDEXES = [
     collection: "user_identity",
     name: "idx_provider_identityKey",
     keys: [{ name: "provider", direction: 1 }, { name: "identityKey", direction: 1 }],
+    unique: true,
+  },
+  {
+    collection: "user_tag",
+    name: "idx_user_tag_name",
+    keys: [
+      { name: "userId", direction: 1 },
+      { name: "name", direction: 1 },
+    ],
     unique: true,
   },
   {
@@ -38,6 +48,16 @@ const INDEXES = [
       { name: "todoDate", direction: 1 },
     ],
     unique: true,
+  },
+  {
+    collection: "todo",
+    name: "idx_user_date_tag_created",
+    keys: [
+      { name: "userId", direction: 1 },
+      { name: "todoDate", direction: 1 },
+      { name: "tagName", direction: 1 },
+      { name: "createdAt", direction: 1 },
+    ],
   },
 ];
 

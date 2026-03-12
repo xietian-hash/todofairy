@@ -3,6 +3,7 @@ const { createRouteMeta, pickRoute } = require("./route-matcher");
 const userService = require("./services/user-service");
 const taskService = require("./services/task-service");
 const todoService = require("./services/todo-service");
+const tagService = require("./services/tag-service");
 const calendarService = require("./services/calendar-service");
 const internalService = require("./services/internal-service");
 const { ensureInternalKey } = require("./auth");
@@ -36,6 +37,9 @@ const routes = [
   createRoute("GET", "/api/v1/calendar/month", async ({ auth, query }) =>
     calendarService.getMonthCalendar(auth.userId, query.month)
   ),
+  createRoute("GET", "/api/v1/tags/options", async ({ auth }) =>
+    tagService.listTagOptions(auth.userId)
+  ),
   createRoute("GET", "/api/v1/todos", async ({ auth, query }) =>
     todoService.listTodos(auth.userId, query)
   ),
@@ -47,6 +51,9 @@ const routes = [
   ),
   createRoute("DELETE", "/api/v1/todos/:todoId", async ({ auth, params }) =>
     todoService.deleteTodo(auth.userId, params.todoId)
+  ),
+  createRoute("GET", "/api/v1/tasks", async ({ auth, query }) =>
+    taskService.listTasks(auth.userId, query || {})
   ),
   createRoute("POST", "/api/v1/tasks", async ({ auth, body }) =>
     taskService.createTask(auth.userId, body || {})

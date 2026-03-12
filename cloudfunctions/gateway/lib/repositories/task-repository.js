@@ -60,10 +60,50 @@ async function listActiveTasksForDate(dateStr, limit = 100, skip = 0) {
   return res.data || [];
 }
 
+async function countTasksByUser(userId, status) {
+  const where = {
+    userId,
+    isDeleted: false,
+  };
+  if (status !== null && status !== undefined) {
+    where.status = status;
+  }
+  const res = await db.collection(TASK_COLLECTION).where(where).count();
+  return res.total || 0;
+}
+
+async function listTasksByUser(userId, options = {}) {
+  const {
+    status = null,
+    pageNo = 1,
+    pageSize = 20,
+  } = options;
+
+  const where = {
+    userId,
+    isDeleted: false,
+  };
+  if (status !== null && status !== undefined) {
+    where.status = status;
+  }
+
+  const skip = (pageNo - 1) * pageSize;
+  const res = await db
+    .collection(TASK_COLLECTION)
+    .where(where)
+    .orderBy("createdAt", "desc")
+    .skip(skip)
+    .limit(pageSize)
+    .get();
+  return res.data || [];
+}
+
 module.exports = {
   createTask,
   getTaskById,
   updateTaskById,
   softDeleteTaskById,
   listActiveTasksForDate,
+  countTasksByUser,
+  listTasksByUser,
 };

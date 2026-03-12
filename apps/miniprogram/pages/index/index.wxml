@@ -4,76 +4,129 @@
       <text class="nav-title">待办精灵</text>
     </view>
   </view>
-  <view class="calendar-card">
-    <view class="calendar-banner">
-      <view class="calendar-head">
-        <button class="month-btn" data-delta="-1" bindtap="onMonthShift">‹</button>
-        <view class="month-text">{{currentMonth}}</view>
-        <button class="month-btn" data-delta="1" bindtap="onMonthShift">›</button>
+  <ui-toast id="uiToast" top="{{statusBarHeight + navBarHeight + 12}}"></ui-toast>
+  <block wx:if="{{currentView==='todo'}}">
+    <view class="calendar-card">
+      <view class="calendar-banner">
+        <view class="calendar-head">
+          <button class="month-btn" data-delta="-1" bindtap="onMonthShift">‹</button>
+          <view class="month-text">{{currentMonth}}</view>
+          <button class="month-btn" data-delta="1" bindtap="onMonthShift">›</button>
+        </view>
+      </view>
+      <view class="week-row">
+        <text>一</text>
+        <text>二</text>
+        <text>三</text>
+        <text>四</text>
+        <text>五</text>
+        <text>六</text>
+        <text>日</text>
+      </view>
+      <view class="day-grid">
+        <block wx:for="{{calendarCells}}" wx:key="key">
+          <view
+            wx:if="{{item.type==='day'}}"
+            class="day-cell status-{{item.status}} {{item.isToday ? 'today' : ''}} {{item.isSelected ? 'selected' : ''}}"
+            data-date="{{item.date}}"
+            bindtap="onSelectDate"
+          >
+            <text>{{item.day}}</text>
+            <view class="today-dot"></view>
+          </view>
+          <view wx:else class="day-cell empty"></view>
+        </block>
       </view>
     </view>
-    <view class="week-row">
-      <text>一</text>
-      <text>二</text>
-      <text>三</text>
-      <text>四</text>
-      <text>五</text>
-      <text>六</text>
-      <text>日</text>
+
+    <view class="progress-card">
+      <view class="progress-header">
+        <text class="progress-label">{{selectedDate}}</text>
+        <text class="progress-count">{{completedCount}}/{{total}}</text>
+      </view>
+      <view class="progress-track">
+        <view class="progress-fill" style="width: {{progressPercent}}%"></view>
+      </view>
     </view>
-    <view class="day-grid">
-      <block wx:for="{{calendarCells}}" wx:key="key">
-        <view
-          wx:if="{{item.type==='day'}}"
-          class="day-cell status-{{item.status}} {{item.isToday ? 'today' : ''}} {{item.isSelected ? 'selected' : ''}}"
-          data-date="{{item.date}}"
-          bindtap="onSelectDate"
-        >
-          <text>{{item.day}}</text>
-          <view class="today-dot"></view>
+
+    <view class="todo-list" wx:if="{{todos.length>0}}">
+      <block wx:for="{{todos}}" wx:key="_id">
+        <view class="todo-swipe-item">
+          <view class="todo-delete-area">
+            <view class="todo-delete-btn" data-todo-id="{{item._id}}" bindtap="onDeleteTodo">删除</view>
+          </view>
+          <view
+            class="todo-swipe-content {{movingTodoId===item._id ? 'moving' : ''}}"
+            data-todo-id="{{item._id}}"
+            bindtouchstart="onTodoTouchStart"
+            bindtouchmove="onTodoTouchMove"
+            bindtouchend="onTodoTouchEnd"
+            bindtouchcancel="onTodoTouchCancel"
+            bindtap="onTodoCardTap"
+            style="transform: translateX({{movingTodoId===item._id ? movingOffset : (openedTodoId===item._id ? (0 - swipeDeleteWidthPx) : 0)}}px);"
+          >
+            <view class="todo-card {{item.status===2 ? 'done' : ''}} {{item.isExpired ? 'expired' : ''}}">
+              <view class="todo-main">
+                <view class="todo-content-row">
+                  <view class="todo-title">{{item.title}}</view>
+                  <text wx:if="{{item.tagName}}" class="todo-tag">{{item.tagName}}</text>
+                  <text wx:if="{{item.isExpired}}" class="expired-tag">已失效</text>
+                </view>
+                <button
+                  class="check-btn {{item.status===2 ? 'checked' : ''}}"
+                  data-todo-id="{{item._id}}"
+                  data-status="{{item.status}}"
+                  bindtap="onToggleTodoStatus"
+                >
+                  {{item.status===2 ? '✓' : ''}}
+                </button>
+              </view>
+            </view>
+          </view>
         </view>
-        <view wx:else class="day-cell empty"></view>
       </block>
     </view>
-  </view>
-
-  <view class="progress-card">
-    <view class="progress-header">
-      <text class="progress-label">{{selectedDate}}</text>
-      <text class="progress-count">{{completedCount}}/{{total}}</text>
+    <view class="empty-state" wx:else>
+      <view class="empty-title">这一天暂无待办</view>
+      <view class="empty-desc">点击右下角 + ，添加你的第一个任务</view>
     </view>
-    <view class="progress-track">
-      <view class="progress-fill" style="width: {{progressPercent}}%"></view>
-    </view>
-  </view>
+  </block>
 
-  <view class="todo-list" wx:if="{{todos.length>0}}">
-    <block wx:for="{{todos}}" wx:key="_id">
-      <view class="todo-card {{item.status===2 ? 'done' : ''}} {{item.isExpired ? 'expired' : ''}}">
-        <view class="todo-main">
-          <view class="todo-content-row">
-            <view class="todo-title">{{item.title}}</view>
-            <text wx:if="{{item.isExpired}}" class="expired-tag">已失效</text>
+  <block wx:elif="{{currentView==='task'}}">
+    <view class="task-list" wx:if="{{tasks.length>0}}">
+      <block wx:for="{{tasks}}" wx:key="_id">
+        <view class="task-card {{item.status===0 ? 'disabled' : ''}}">
+          <view class="task-row">
+            <text class="task-title">{{item.title}}</text>
+            <text class="task-status {{item.status===1 ? 'on' : 'off'}}">{{item.statusText}}</text>
           </view>
-          <button
-            class="check-btn {{item.status===2 ? 'checked' : ''}}"
-            data-todo-id="{{item._id}}"
-            data-status="{{item.status}}"
-            bindtap="onToggleTodoStatus"
-          >
-            {{item.status===2 ? '✓' : ''}}
-          </button>
+          <view class="task-row task-meta">
+            <text wx:if="{{item.tagName}}" class="task-tag">{{item.tagName}}</text>
+            <text class="task-date">{{item.dateRangeText}}</text>
+          </view>
         </view>
-      </view>
-    </block>
-  </view>
-  <view class="empty-state" wx:else>
-    <view class="empty-title">这一天暂无待办</view>
-    <view class="empty-desc">点击下方按钮，添加你的第一个任务</view>
-  </view>
+      </block>
+    </view>
+    <view class="empty-state" wx:else>
+      <view class="empty-title">{{taskListLoading ? "任务加载中..." : "暂无任务"}}</view>
+      <view class="empty-desc">{{taskListLoading ? "请稍候" : "点击右下角 + 创建任务"}}</view>
+    </view>
+  </block>
 
   <view class="bottom-bar">
-    <button class="create-btn" bindtap="onOpenCreateTask">+ 新建任务</button>
+    <view class="menu-btn" bindtap="onMenuPlaceholder">☰</view>
+    <view
+      class="view-switcher"
+      bindtouchstart="onViewSwitchTouchStart"
+      bindtouchmove="onViewSwitchTouchMove"
+      bindtouchend="onViewSwitchTouchEnd"
+      bindtouchcancel="onViewSwitchTouchCancel"
+    >
+      <view class="view-switch-thumb {{currentView==='task' ? 'to-task' : ''}}"></view>
+      <view class="view-switch-option {{currentView==='todo' ? 'active' : ''}}" data-view="todo" bindtap="onSwitchView">待办</view>
+      <view class="view-switch-option {{currentView==='task' ? 'active' : ''}}" data-view="task" bindtap="onSwitchView">任务</view>
+    </view>
+    <view class="quick-create-btn" bindtap="onOpenCreateTask">+</view>
   </view>
 
   <view wx:if="{{taskModalVisible}}" class="modal-mask" bindtap="onMaskTap" catchtouchmove="onMaskTouchMove">
@@ -89,6 +142,22 @@
 
         <view class="form-item">
           <textarea class="textarea" placeholder="请输入备注（可选）" value="{{taskForm.remark}}" bindinput="onTaskRemarkInput" maxlength="300" adjust-position="{{false}}"></textarea>
+        </view>
+
+        <view class="form-item">
+          <text class="label">标签</text>
+          <picker
+            mode="selector"
+            range="{{tagOptions}}"
+            range-key="tagName"
+            value="{{taskTagIndex >= 0 ? taskTagIndex : 0}}"
+            bindchange="onTaskTagChange"
+            disabled="{{tagLoading || tagOptions.length===0}}"
+          >
+            <view class="picker {{taskForm.tagName ? '' : 'picker-placeholder'}} {{tagLoading || tagOptions.length===0 ? 'disabled' : ''}}">
+              {{taskForm.tagName || (tagLoading ? '标签加载中...' : (tagOptions.length>0 ? '请选择标签' : '暂无可选标签'))}}
+            </view>
+          </picker>
         </view>
 
         <view class="form-item row">
