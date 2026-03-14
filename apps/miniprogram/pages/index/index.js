@@ -4,11 +4,35 @@ const { getTodayDate, monthOfDate, shiftMonth, listMonthGrid } = require("../../
 
 const TASK_MODAL_ANIM_DURATION = 160;
 const TASK_MODAL_CLOSE_DELAY = TASK_MODAL_ANIM_DURATION + 20;
-const SWIPE_DELETE_WIDTH_RPX = 156;
+const TODO_SWIPE_DELETE_WIDTH_RPX = 156;
+const TASK_SWIPE_ACTION_WIDTH_RPX = 312;
 const SWIPE_DIRECTION_LOCK_DISTANCE_PX = 8;
 const SWIPE_OPEN_THRESHOLD_RATIO = 0.4;
 const SWIPE_RIGHT_PULL_PX = 12;
 const VIEW_SWITCH_THRESHOLD_PX = 28;
+const REPEAT_WEEKDAY_OPTIONS = [
+  { value: 1, label: "周一" },
+  { value: 2, label: "周二" },
+  { value: 3, label: "周三" },
+  { value: 4, label: "周四" },
+  { value: 5, label: "周五" },
+  { value: 6, label: "周六" },
+  { value: 7, label: "周日" },
+];
+
+function normalizeRepeatWeekdays(weekdays = []) {
+  return [...new Set((weekdays || []).map((item) => Number(item)).filter((item) => Number.isInteger(item) && item >= 1 && item <= 7))].sort(
+    (a, b) => a - b
+  );
+}
+
+function buildRepeatWeekdayOptions(selectedWeekdays = []) {
+  const selectedSet = new Set(normalizeRepeatWeekdays(selectedWeekdays));
+  return REPEAT_WEEKDAY_OPTIONS.map((item) => ({
+    ...item,
+    selected: selectedSet.has(item.value),
+  }));
+}
 
 function defaultTaskForm(today) {
   return {
@@ -18,6 +42,7 @@ function defaultTaskForm(today) {
     tagName: "",
     effectiveStartDate: today,
     effectiveEndDate: "",
+    repeatWeekdays: [],
   };
 }
 
@@ -51,7 +76,6 @@ function normalizeTaskList(list = []) {
   return (list || []).map((item) => ({
     ...item,
     dateRangeText: formatTaskDateRange(item),
-    statusText: Number(item.status) === 1 ? "启用" : "停用",
   }));
 }
 
@@ -85,12 +109,18 @@ Page({
     tagOptions: [],
     tagLoading: false,
     taskTagIndex: -1,
+    repeatWeekdayOptions: buildRepeatWeekdayOptions([]),
     statusBarHeight: 0,
     navBarHeight: 44,
-    swipeDeleteWidthPx: 0,
+    todoSwipeDeleteWidthPx: 0,
+    taskSwipeActionWidthPx: 0,
     openedTodoId: "",
     movingTodoId: "",
     movingOffset: 0,
+    openedTaskId: "",
+    movingTaskId: "",
+    movingTaskOffset: 0,
+    todayCompensatedDate: "",
   },
 
   async onLoad() {
@@ -98,15 +128,20 @@ Page({
     const menuBtn = wx.getMenuButtonBoundingClientRect();
     const statusBarHeight = sysInfo.statusBarHeight;
     const navBarHeight = (menuBtn.top - statusBarHeight) * 2 + menuBtn.height;
-    const swipeDeleteWidthPx = Math.round((SWIPE_DELETE_WIDTH_RPX / 750) * sysInfo.windowWidth);
+    const todoSwipeDeleteWidthPx = Math.round((TODO_SWIPE_DELETE_WIDTH_RPX / 750) * sysInfo.windowWidth);
+    const taskSwipeActionWidthPx = Math.round((TASK_SWIPE_ACTION_WIDTH_RPX / 750) * sysInfo.windowWidth);
     const today = getTodayDate();
+    const currentMonth = monthOfDate(today);
+    const initialCalendarCells = listMonthGrid(currentMonth, today, today, {});
     this.setData({
       statusBarHeight,
       navBarHeight,
-      swipeDeleteWidthPx,
+      todoSwipeDeleteWidthPx,
+      taskSwipeActionWidthPx,
       today,
       selectedDate: today,
-      currentMonth: monthOfDate(today),
+      currentMonth,
+      calendarCells: initialCalendarCells,
       taskForm: defaultTaskForm(today),
     });
     await this.bootstrap();
@@ -118,11 +153,14 @@ Page({
       this._taskModalCloseTimer = null;
     }
     this._todoSwipeGesture = null;
+    this._taskSwipeGesture = null;
     this._viewSwitchGesture = null;
+    this._taskTapGuard = null;
   },
 
   async onPullDownRefresh() {
     this.closeOpenedTodoSwipe();
+    this.closeOpenedTaskSwipe();
     if (this.data.currentView === "task") {
       await this.loadTasks(true);
     } else {
@@ -155,9 +193,28 @@ Page({
     getApp().globalData.token = loginData.token;
   },
 
+  async ensureTodayCompensated() {
+    const { today, selectedDate, todayCompensatedDate } = this.data;
+    if (!today || selectedDate !== today || todayCompensatedDate === today || this._compensateTodayLoading) {
+      return;
+    }
+    this._compensateTodayLoading = true;
+    try {
+      await api.compensateTodayTodos();
+      this.setData({
+        todayCompensatedDate: today,
+      });
+    } catch (err) {
+      console.warn("当日补偿调用失败", err && err.message ? err.message : err);
+    } finally {
+      this._compensateTodayLoading = false;
+    }
+  },
+
   async loadPageData() {
     this.setData({ loading: true, errorText: "" });
     try {
+      await this.ensureTodayCompensated();
       await Promise.all([this.loadCalendar(), this.loadTodos()]);
     } catch (err) {
       this.setData({
@@ -209,6 +266,9 @@ Page({
       this.setData({
         tasks: normalizeTaskList(data.list || []),
         taskListLoaded: true,
+        openedTaskId: "",
+        movingTaskId: "",
+        movingTaskOffset: 0,
       });
     } catch (err) {
       this.showPageToast({
@@ -232,6 +292,7 @@ Page({
       currentView: nextView,
     });
     this.closeOpenedTodoSwipe();
+    this.closeOpenedTaskSwipe();
     if (nextView === "task") {
       await this.loadTasks();
     }
@@ -305,6 +366,7 @@ Page({
       currentMonth: nextMonth,
     });
     this.closeOpenedTodoSwipe();
+    this.closeOpenedTaskSwipe();
     await this.loadCalendar();
   },
 
@@ -318,6 +380,7 @@ Page({
       calendarCells: cells,
     });
     this.closeOpenedTodoSwipe();
+    this.closeOpenedTaskSwipe();
     await this.loadTodos();
   },
 
@@ -329,6 +392,17 @@ Page({
       openedTodoId: "",
       movingTodoId: "",
       movingOffset: 0,
+    });
+  },
+
+  closeOpenedTaskSwipe() {
+    if (!this.data.openedTaskId && !this.data.movingTaskId && this.data.movingTaskOffset === 0) {
+      return;
+    }
+    this.setData({
+      openedTaskId: "",
+      movingTaskId: "",
+      movingTaskOffset: 0,
     });
   },
 
@@ -346,11 +420,18 @@ Page({
     });
   },
 
-  onMenuPlaceholder() {
-    this.showPageToast({
-      text: "菜单功能开发中",
-      type: "info",
-      key: "menu_placeholder",
+  onOpenMenuDrawer() {
+    this.closeOpenedTodoSwipe();
+    this.closeOpenedTaskSwipe();
+    wx.navigateTo({
+      url: "/pages/menu/index",
+      fail: () => {
+        this.showPageToast({
+          text: "菜单打开失败",
+          type: "error",
+          key: "menu_open_error",
+        });
+      },
     });
   },
 
@@ -361,7 +442,7 @@ Page({
       return;
     }
 
-    const { openedTodoId, swipeDeleteWidthPx } = this.data;
+    const { openedTodoId, todoSwipeDeleteWidthPx } = this.data;
     if (openedTodoId && openedTodoId !== todoId) {
       this.closeOpenedTodoSwipe();
     }
@@ -370,9 +451,9 @@ Page({
       todoId,
       startX: touch.clientX,
       startY: touch.clientY,
-      startOffset: openedTodoId === todoId ? -swipeDeleteWidthPx : 0,
+      startOffset: openedTodoId === todoId ? -todoSwipeDeleteWidthPx : 0,
       lockDirection: "pending",
-      lastOffset: openedTodoId === todoId ? -swipeDeleteWidthPx : 0,
+      lastOffset: openedTodoId === todoId ? -todoSwipeDeleteWidthPx : 0,
     };
   },
 
@@ -398,7 +479,7 @@ Page({
       return;
     }
 
-    const minOffset = -this.data.swipeDeleteWidthPx;
+    const minOffset = -this.data.todoSwipeDeleteWidthPx;
     const maxOffset = gesture.startOffset < 0 ? SWIPE_RIGHT_PULL_PX : 0;
     let nextOffset = gesture.startOffset + deltaX;
     if (nextOffset < minOffset) {
@@ -433,7 +514,7 @@ Page({
       return;
     }
 
-    const openThreshold = -this.data.swipeDeleteWidthPx * SWIPE_OPEN_THRESHOLD_RATIO;
+    const openThreshold = -this.data.todoSwipeDeleteWidthPx * SWIPE_OPEN_THRESHOLD_RATIO;
     const shouldOpen = gesture.lastOffset <= openThreshold;
     this.setData({
       openedTodoId: shouldOpen ? gesture.todoId : "",
@@ -526,8 +607,193 @@ Page({
     }
   },
 
-  onOpenCreateTask() {
-    const { today } = this.data;
+  onTaskTouchStart(e) {
+    const { taskId } = e.currentTarget.dataset;
+    const touch = (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]);
+    if (!taskId || !touch) {
+      return;
+    }
+
+    const { openedTaskId, taskSwipeActionWidthPx } = this.data;
+    if (openedTaskId && openedTaskId !== taskId) {
+      this.closeOpenedTaskSwipe();
+    }
+
+    this._taskSwipeGesture = {
+      taskId,
+      startX: touch.clientX,
+      startY: touch.clientY,
+      startOffset: openedTaskId === taskId ? -taskSwipeActionWidthPx : 0,
+      lockDirection: "pending",
+      lastOffset: openedTaskId === taskId ? -taskSwipeActionWidthPx : 0,
+      moved: false,
+    };
+  },
+
+  onTaskTouchMove(e) {
+    const gesture = this._taskSwipeGesture;
+    if (!gesture) {
+      return;
+    }
+    const touch = (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]);
+    if (!touch) {
+      return;
+    }
+
+    const deltaX = touch.clientX - gesture.startX;
+    const deltaY = touch.clientY - gesture.startY;
+    if (gesture.lockDirection === "pending") {
+      if (Math.abs(deltaX) < SWIPE_DIRECTION_LOCK_DISTANCE_PX && Math.abs(deltaY) < SWIPE_DIRECTION_LOCK_DISTANCE_PX) {
+        return;
+      }
+      gesture.lockDirection = Math.abs(deltaX) >= Math.abs(deltaY) ? "horizontal" : "vertical";
+    }
+    if (gesture.lockDirection !== "horizontal") {
+      return;
+    }
+
+    const minOffset = -this.data.taskSwipeActionWidthPx;
+    const maxOffset = gesture.startOffset < 0 ? SWIPE_RIGHT_PULL_PX : 0;
+    let nextOffset = gesture.startOffset + deltaX;
+    if (nextOffset < minOffset) {
+      nextOffset = minOffset;
+    }
+    if (nextOffset > maxOffset) {
+      nextOffset = maxOffset;
+    }
+    if (nextOffset === gesture.lastOffset) {
+      return;
+    }
+
+    gesture.lastOffset = nextOffset;
+    gesture.moved = true;
+    this.setData({
+      movingTaskId: gesture.taskId,
+      movingTaskOffset: nextOffset,
+    });
+  },
+
+  onTaskTouchEnd() {
+    const gesture = this._taskSwipeGesture;
+    if (!gesture) {
+      return;
+    }
+    this._taskSwipeGesture = null;
+
+    if (gesture.lockDirection === "vertical") {
+      this.setData({
+        movingTaskId: "",
+        movingTaskOffset: 0,
+      });
+      return;
+    }
+
+    const openThreshold = -this.data.taskSwipeActionWidthPx * SWIPE_OPEN_THRESHOLD_RATIO;
+    const shouldOpen = gesture.lastOffset <= openThreshold;
+    if (gesture.moved) {
+      this._taskTapGuard = {
+        taskId: gesture.taskId,
+        expiresAt: Date.now() + 180,
+      };
+    }
+    this.setData({
+      openedTaskId: shouldOpen ? gesture.taskId : "",
+      movingTaskId: "",
+      movingTaskOffset: 0,
+    });
+  },
+
+  onTaskTouchCancel() {
+    this.onTaskTouchEnd();
+  },
+
+  onTaskCardTap(e) {
+    const { taskId } = e.currentTarget.dataset;
+    if (!taskId) {
+      return;
+    }
+    if (this._taskTapGuard && this._taskTapGuard.taskId === taskId) {
+      if (Date.now() < this._taskTapGuard.expiresAt) {
+        return;
+      }
+      this._taskTapGuard = null;
+    }
+    if (this.data.openedTaskId && this.data.openedTaskId === taskId) {
+      this.closeOpenedTaskSwipe();
+      return;
+    }
+    if (this.data.openedTaskId && this.data.openedTaskId !== taskId) {
+      this.closeOpenedTaskSwipe();
+    }
+    this.openTaskEditor(taskId);
+  },
+
+  async onDeleteTask(e) {
+    const { taskId } = e.currentTarget.dataset;
+    if (!taskId) {
+      return;
+    }
+    try {
+      await api.deleteTask(taskId);
+      this.closeOpenedTaskSwipe();
+      this.showPageToast({
+        text: "删除成功",
+        type: "success",
+        key: "task_delete_success",
+      });
+      await this.loadTasks(true);
+    } catch (err) {
+      this.showPageToast({
+        text: err.message || "删除失败",
+        type: "error",
+        key: `task_delete_error:${err.message || "删除失败"}`,
+      });
+    }
+  },
+
+  onEditTask(e) {
+    const { taskId } = e.currentTarget.dataset;
+    this.openTaskEditor(taskId);
+  },
+
+  openTaskEditor(taskId) {
+    if (!taskId) {
+      return;
+    }
+    const task = (this.data.tasks || []).find((item) => item && item._id === taskId);
+    if (!task) {
+      this.showPageToast({
+        text: "任务不存在",
+        type: "error",
+        key: "task_edit_not_found",
+      });
+      return;
+    }
+    this.closeOpenedTaskSwipe();
+    this.openTaskModal("edit", task);
+  },
+
+  openTaskModal(mode, task = null) {
+    const isEdit = mode === "edit";
+    if (isEdit && (!task || !task._id)) {
+      return;
+    }
+
+    const defaultForm = defaultTaskForm(this.data.today);
+    const normalizedWeekdays = normalizeRepeatWeekdays(task && task.repeatRule && task.repeatRule.weekdays);
+    const taskForm = isEdit
+      ? {
+          ...defaultForm,
+          title: task.title || "",
+          remark: task.remark || "",
+          tagId: task.tagId ? String(task.tagId) : "",
+          tagName: task.tagName || "",
+          effectiveStartDate: task.effectiveStartDate || defaultForm.effectiveStartDate,
+          effectiveEndDate: task.effectiveEndDate || "",
+          repeatWeekdays: normalizedWeekdays,
+        }
+      : defaultForm;
+
     if (this._taskModalCloseTimer) {
       clearTimeout(this._taskModalCloseTimer);
       this._taskModalCloseTimer = null;
@@ -540,10 +806,11 @@ Page({
     this.setData({
       taskModalVisible: true,
       taskModalClosing: false,
-      taskModalMode: "create",
-      editingTaskId: "",
-      taskForm: defaultTaskForm(today),
-      taskTagIndex: -1,
+      taskModalMode: isEdit ? "edit" : "create",
+      editingTaskId: isEdit ? task._id : "",
+      taskForm,
+      taskTagIndex: findTagIndex(this.data.tagOptions, taskForm.tagId),
+      repeatWeekdayOptions: buildRepeatWeekdayOptions(taskForm.repeatWeekdays),
       taskModalAnimation: initialAnimation.export(),
     });
     this.loadTagOptions(true).catch(() => {});
@@ -559,6 +826,11 @@ Page({
         taskTitleFocus: true,
       });
     });
+  },
+
+  onOpenCreateTask() {
+    this.closeOpenedTaskSwipe();
+    this.openTaskModal("create");
   },
 
   onCloseTaskModal() {
@@ -636,8 +908,24 @@ Page({
     }
   },
 
-  onTaskTagChange(e) {
-    const index = Number(e.detail.value);
+  onTaskTagTap(e) {
+    const { tagId } = e.currentTarget.dataset;
+    if (!tagId || this.data.tagLoading) {
+      return;
+    }
+    const normalizedTagId = String(tagId);
+    if (this.data.taskForm.tagId === normalizedTagId) {
+      this.setData({
+        taskTagIndex: -1,
+        "taskForm.tagId": "",
+        "taskForm.tagName": "",
+      });
+      return;
+    }
+    const index = findTagIndex(this.data.tagOptions, normalizedTagId);
+    if (index < 0) {
+      return;
+    }
     const selected = this.data.tagOptions[index];
     if (!selected) {
       return;
@@ -658,6 +946,23 @@ Page({
   onTaskEndDateChange(e) {
     this.setData({
       "taskForm.effectiveEndDate": e.detail.value,
+    });
+  },
+
+  onToggleTaskRepeatWeekday(e) {
+    const weekday = Number(e.currentTarget.dataset.weekday);
+    if (!Number.isInteger(weekday) || weekday < 1 || weekday > 7) {
+      return;
+    }
+    const selectedWeekdays = normalizeRepeatWeekdays(this.data.taskForm.repeatWeekdays);
+    const exists = selectedWeekdays.includes(weekday);
+    const nextWeekdays = exists
+      ? selectedWeekdays.filter((item) => item !== weekday)
+      : [...selectedWeekdays, weekday];
+    const normalized = normalizeRepeatWeekdays(nextWeekdays);
+    this.setData({
+      "taskForm.repeatWeekdays": normalized,
+      repeatWeekdayOptions: buildRepeatWeekdayOptions(normalized),
     });
   },
 
@@ -685,7 +990,10 @@ Page({
       tagName: taskForm.tagName || null,
       effectiveStartDate: taskForm.effectiveStartDate,
       effectiveEndDate: taskForm.effectiveEndDate || null,
-      repeatRule: { type: "daily" },
+      repeatRule: {
+        type: "weekly",
+        weekdays: normalizeRepeatWeekdays(taskForm.repeatWeekdays),
+      },
       status: 1,
     };
 

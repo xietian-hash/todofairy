@@ -60,6 +60,21 @@ async function listActiveTasksForDate(dateStr, limit = 100, skip = 0) {
   return res.data || [];
 }
 
+async function listActiveTasksByUserForDate(userId, dateStr, limit = 100, skip = 0) {
+  const res = await db
+    .collection(TASK_COLLECTION)
+    .where({
+      userId,
+      isDeleted: false,
+      status: 1,
+      effectiveStartDate: _.lte(dateStr),
+    })
+    .skip(skip)
+    .limit(limit)
+    .get();
+  return res.data || [];
+}
+
 async function countTasksByUser(userId, status) {
   const where = {
     userId,
@@ -69,6 +84,18 @@ async function countTasksByUser(userId, status) {
     where.status = status;
   }
   const res = await db.collection(TASK_COLLECTION).where(where).count();
+  return res.total || 0;
+}
+
+async function countTasksByTagId(userId, tagId) {
+  const res = await db
+    .collection(TASK_COLLECTION)
+    .where({
+      userId,
+      isDeleted: false,
+      tagId,
+    })
+    .count();
   return res.total || 0;
 }
 
@@ -98,12 +125,31 @@ async function listTasksByUser(userId, options = {}) {
   return res.data || [];
 }
 
+async function updateTaskTagNameByTagId(userId, tagId, tagName, nowMs) {
+  await db
+    .collection(TASK_COLLECTION)
+    .where({
+      userId,
+      isDeleted: false,
+      tagId,
+    })
+    .update({
+      data: {
+        tagName,
+        updatedAt: nowMs,
+      },
+    });
+}
+
 module.exports = {
   createTask,
   getTaskById,
   updateTaskById,
   softDeleteTaskById,
   listActiveTasksForDate,
+  listActiveTasksByUserForDate,
   countTasksByUser,
+  countTasksByTagId,
   listTasksByUser,
+  updateTaskTagNameByTagId,
 };

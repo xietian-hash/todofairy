@@ -6,10 +6,15 @@ function runRouterMatchTest() {
   const routes = [
     createRouteMeta("GET", "/api/v1/todos"),
     createRouteMeta("PATCH", "/api/v1/todos/:todoId/status"),
+    createRouteMeta("PUT", "/api/v1/tags/:tagId"),
   ];
   const matched = pickRoute(routes, "PATCH", "/api/v1/todos/todo_1/status");
   assert.ok(matched);
   assert.strictEqual(matched.params.todoId, "todo_1");
+
+  const tagMatched = pickRoute(routes, "PUT", "/api/v1/tags/tag_1");
+  assert.ok(tagMatched);
+  assert.strictEqual(tagMatched.params.tagId, "tag_1");
 
   const notFound = pickRoute(routes, "GET", "/api/v1/not-exist");
   assert.strictEqual(notFound, null);

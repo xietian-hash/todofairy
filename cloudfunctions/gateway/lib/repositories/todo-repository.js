@@ -29,6 +29,19 @@ async function findTodoByTaskAndDate(userId, taskId, todoDate) {
   return res.data[0] || null;
 }
 
+async function findAnyTodoByTaskAndDate(userId, taskId, todoDate) {
+  const res = await db
+    .collection(TODO_COLLECTION)
+    .where({
+      userId,
+      taskId,
+      todoDate,
+    })
+    .limit(1)
+    .get();
+  return res.data[0] || null;
+}
+
 async function createTodo(data) {
   const res = await db.collection(TODO_COLLECTION).add({ data });
   return res._id;
@@ -110,13 +123,31 @@ async function markExpiredBeforeDate(dateStr, nowMs) {
   return res.stats ? res.stats.updated : 0;
 }
 
+async function updateTodoTagNameByTagId(userId, tagId, tagName, nowMs) {
+  await db
+    .collection(TODO_COLLECTION)
+    .where({
+      userId,
+      isDeleted: false,
+      tagId,
+    })
+    .update({
+      data: {
+        tagName,
+        updatedAt: nowMs,
+      },
+    });
+}
+
 module.exports = {
   getTodoById,
   findTodoByTaskAndDate,
+  findAnyTodoByTaskAndDate,
   createTodo,
   updateTodoById,
   updateTodoByTaskAndDate,
   listTodosByDate,
   listTodosByDateRange,
   markExpiredBeforeDate,
+  updateTodoTagNameByTagId,
 };

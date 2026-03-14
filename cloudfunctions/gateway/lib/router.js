@@ -40,6 +40,18 @@ const routes = [
   createRoute("GET", "/api/v1/tags/options", async ({ auth }) =>
     tagService.listTagOptions(auth.userId)
   ),
+  createRoute("GET", "/api/v1/tags", async ({ auth }) =>
+    tagService.listTags(auth.userId)
+  ),
+  createRoute("POST", "/api/v1/tags", async ({ auth, body }) =>
+    tagService.createTag(auth.userId, body || {})
+  ),
+  createRoute("PUT", "/api/v1/tags/:tagId", async ({ auth, params, body }) =>
+    tagService.updateTag(auth.userId, params.tagId, body || {})
+  ),
+  createRoute("DELETE", "/api/v1/tags/:tagId", async ({ auth, params }) =>
+    tagService.deleteTag(auth.userId, params.tagId)
+  ),
   createRoute("GET", "/api/v1/todos", async ({ auth, query }) =>
     todoService.listTodos(auth.userId, query)
   ),
@@ -51,6 +63,9 @@ const routes = [
   ),
   createRoute("DELETE", "/api/v1/todos/:todoId", async ({ auth, params }) =>
     todoService.deleteTodo(auth.userId, params.todoId)
+  ),
+  createRoute("POST", "/api/v1/todos/compensate-today", async ({ auth }) =>
+    todoService.compensateTodayForUser(auth.userId)
   ),
   createRoute("GET", "/api/v1/tasks", async ({ auth, query }) =>
     taskService.listTasks(auth.userId, query || {})

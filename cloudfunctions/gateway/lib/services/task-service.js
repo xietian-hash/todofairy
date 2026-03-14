@@ -1,27 +1,25 @@
 const { AppError, ERROR_CODES } = require("../errors");
 const { assertString, assertDate, assertDateRange, assertEnum } = require("../validators");
 const { todayStr, getNowMs, isDateInRange } = require("../date");
+const { normalizeRepeatRule, isSameRepeatRule } = require("../repeat-rule");
 const taskRepo = require("../repositories/task-repository");
 const todoRepo = require("../repositories/todo-repository");
 const tagRepo = require("../repositories/tag-repository");
 const todoService = require("./todo-service");
 
 function normalizeTaskPayload(payload = {}) {
-  assertString(payload.title, "任务标题", { required: true, minLen: 1, maxLen: 64 });
-  assertString(payload.remark || "", "任务备注", { required: false, maxLen: 300 });
-  assertDate(payload.effectiveStartDate, "生效开始日期");
+  assertString(payload.title, "浠诲姟鏍囬", { required: true, minLen: 1, maxLen: 64 });
+  assertString(payload.remark || "", "浠诲姟澶囨敞", { required: false, maxLen: 300 });
+  assertDate(payload.effectiveStartDate, "effectiveStartDate");
   if (payload.effectiveEndDate) {
-    assertDate(payload.effectiveEndDate, "生效结束日期");
+    assertDate(payload.effectiveEndDate, "鐢熸晥缁撴潫鏃ユ湡");
   }
-  assertDateRange(payload.effectiveStartDate, payload.effectiveEndDate, "生效开始日期", "生效结束日期");
+  assertDateRange(payload.effectiveStartDate, payload.effectiveEndDate, "effectiveStartDate", "effectiveEndDate");
 
-  const repeatRule = payload.repeatRule || { type: "daily" };
-  if (repeatRule.type !== "daily") {
-    throw new AppError(400, ERROR_CODES.VALIDATION_ERROR, "当前仅支持daily重复规则");
-  }
+  const repeatRule = normalizeRepeatRule(payload.repeatRule, true);
 
   const status = payload.status === undefined ? 1 : Number(payload.status);
-  assertEnum(status, "任务状态", [0, 1]);
+  assertEnum(status, "Task status", [0, 1]);
 
   return {
     title: payload.title.trim(),
@@ -33,6 +31,57 @@ function normalizeTaskPayload(payload = {}) {
   };
 }
 
+async function normalizeStoredTaskRepeatRule(task) {
+  if (!task) {
+    return task;
+  }
+  const normalizedRepeatRule = normalizeRepeatRule(task.repeatRule, false);
+  if (isSameRepeatRule(task.repeatRule || {}, normalizedRepeatRule)) {
+    return {
+      ...task,
+      repeatRule: normalizedRepeatRule,
+    };
+  }
+  const now = getNowMs();
+  await taskRepo.updateTaskById(task._id, task.userId, {
+    repeatRule: normalizedRepeatRule,
+    updatedAt: now,
+  });
+  return {
+    ...task,
+    repeatRule: normalizedRepeatRule,
+    updatedAt: now,
+  };
+}
+
+async function normalizeTaskListRepeatRule(taskList = []) {
+  if (!taskList.length) {
+    return taskList;
+  }
+  const now = getNowMs();
+  const normalizedList = [];
+  for (const task of taskList) {
+    const normalizedRepeatRule = normalizeRepeatRule(task.repeatRule, false);
+    if (!isSameRepeatRule(task.repeatRule || {}, normalizedRepeatRule)) {
+      await taskRepo.updateTaskById(task._id, task.userId, {
+        repeatRule: normalizedRepeatRule,
+        updatedAt: now,
+      });
+      normalizedList.push({
+        ...task,
+        repeatRule: normalizedRepeatRule,
+        updatedAt: now,
+      });
+    } else {
+      normalizedList.push({
+        ...task,
+        repeatRule: normalizedRepeatRule,
+      });
+    }
+  }
+  return normalizedList;
+}
+
 async function resolveTaskTag(userId, rawTagId) {
   if (rawTagId === undefined || rawTagId === null || rawTagId === "") {
     return {
@@ -41,14 +90,14 @@ async function resolveTaskTag(userId, rawTagId) {
     };
   }
 
-  assertString(rawTagId, "标签ID", { required: true, minLen: 1, maxLen: 64 });
+  assertString(rawTagId, "鏍囩ID", { required: true, minLen: 1, maxLen: 64 });
   const tagId = rawTagId.trim();
   const tag = await tagRepo.getTagById(userId, tagId);
   if (!tag) {
-    throw new AppError(400, ERROR_CODES.VALIDATION_ERROR, "标签不存在或不可用");
+    throw new AppError(400, ERROR_CODES.VALIDATION_ERROR, "Tag not found or unavailable");
   }
   if (!(tag.name || tag.tagName)) {
-    throw new AppError(400, ERROR_CODES.VALIDATION_ERROR, "标签名称不能为空");
+    throw new AppError(400, ERROR_CODES.VALIDATION_ERROR, "鏍囩鍚嶇О涓嶈兘涓虹┖");
   }
 
   return {
@@ -75,24 +124,28 @@ async function createTask(userId, payload) {
   const created = await taskRepo.getTaskById(taskId, userId);
 
   const today = todayStr();
-  if (created.status === 1 && isDateInRange(today, created.effectiveStartDate, created.effectiveEndDate)) {
+  if (
+    created.status === 1 &&
+    isDateInRange(today, created.effectiveStartDate, created.effectiveEndDate) &&
+    todoService.shouldTaskGenerateOnDate(created, today, "create_task")
+  ) {
     await todoService.ensureTodoForTaskDate(created, today, "create_task");
   }
-  return created;
+  return normalizeStoredTaskRepeatRule(created);
 }
 
 async function getTask(userId, taskId) {
   const task = await taskRepo.getTaskById(taskId, userId);
   if (!task) {
-    throw new AppError(404, ERROR_CODES.NOT_FOUND, "任务不存在");
+    throw new AppError(404, ERROR_CODES.NOT_FOUND, "Task not found");
   }
-  return task;
+  return normalizeStoredTaskRepeatRule(task);
 }
 
 function normalizePageNo(value) {
   const pageNo = Number(value || 1);
   if (!Number.isInteger(pageNo) || pageNo < 1) {
-    throw new AppError(400, ERROR_CODES.VALIDATION_ERROR, "页码必须是大于等于1的整数");
+    throw new AppError(400, ERROR_CODES.VALIDATION_ERROR, "pageNo must be an integer >= 1");
   }
   return pageNo;
 }
@@ -100,7 +153,7 @@ function normalizePageNo(value) {
 function normalizePageSize(value) {
   const pageSize = Number(value || 20);
   if (!Number.isInteger(pageSize) || pageSize < 1 || pageSize > 100) {
-    throw new AppError(400, ERROR_CODES.VALIDATION_ERROR, "每页条数必须是1-100之间的整数");
+    throw new AppError(400, ERROR_CODES.VALIDATION_ERROR, "pageSize must be an integer between 1 and 100");
   }
   return pageSize;
 }
@@ -110,7 +163,7 @@ function normalizeTaskListStatus(value) {
     return null;
   }
   const status = Number(value);
-  assertEnum(status, "任务状态", [0, 1]);
+  assertEnum(status, "Task status", [0, 1]);
   return status;
 }
 
@@ -126,12 +179,13 @@ async function listTasks(userId, query = {}) {
       pageSize,
     }),
   ]);
+  const normalizedList = await normalizeTaskListRepeatRule(list);
 
   return {
     pageNo,
     pageSize,
     total,
-    list,
+    list: normalizedList,
   };
 }
 
@@ -160,11 +214,13 @@ async function updateTask(userId, taskId, payload) {
 
   if (
     latest.status === 1 &&
-    isDateInRange(today, latest.effectiveStartDate, latest.effectiveEndDate)
+    isDateInRange(today, latest.effectiveStartDate, latest.effectiveEndDate) &&
+    todoService.shouldTaskGenerateOnDate(latest, today, "update_task")
   ) {
     if (todayTodo && todayTodo.status === 1) {
       await todoRepo.updateTodoByTaskAndDate(userId, taskId, today, {
         title: latest.title,
+        remark: latest.remark || "",
         tagId: latest.tagId || null,
         tagName: latest.tagName || null,
         taskVersion: latest.version,

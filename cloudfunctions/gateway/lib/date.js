@@ -94,6 +94,15 @@ function listMonthDates(monthStr) {
   return list;
 }
 
+function weekdayOfDate(dateStr) {
+  const ms = parseDateToChinaMidnightMs(dateStr);
+  if (Number.isNaN(ms)) {
+    return 0;
+  }
+  const weekday = new Date(ms + TZ_OFFSET_MS).getUTCDay();
+  return weekday === 0 ? 7 : weekday;
+}
+
 module.exports = {
   DATE_RE,
   MONTH_RE,
@@ -104,6 +113,7 @@ module.exports = {
   compareDateStr,
   isDateInRange,
   parseDateToChinaMidnightMs,
+  weekdayOfDate,
   monthStartEnd,
   listMonthDates,
 };

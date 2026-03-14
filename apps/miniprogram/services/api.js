@@ -23,6 +23,36 @@ function getTagOptions() {
   });
 }
 
+function getTags() {
+  return request({
+    path: "/api/v1/tags",
+    method: "GET",
+  });
+}
+
+function createTag(payload) {
+  return request({
+    path: "/api/v1/tags",
+    method: "POST",
+    body: payload,
+  });
+}
+
+function updateTag(tagId, payload) {
+  return request({
+    path: `/api/v1/tags/${tagId}`,
+    method: "PUT",
+    body: payload,
+  });
+}
+
+function deleteTag(tagId) {
+  return request({
+    path: `/api/v1/tags/${tagId}`,
+    method: "DELETE",
+  });
+}
+
 function getTodos(date, status) {
   return request({
     path: "/api/v1/todos",
@@ -46,6 +76,13 @@ function deleteTodo(todoId) {
   return request({
     path: `/api/v1/todos/${todoId}`,
     method: "DELETE",
+  });
+}
+
+function compensateTodayTodos() {
+  return request({
+    path: "/api/v1/todos/compensate-today",
+    method: "POST",
   });
 }
 
@@ -84,15 +121,28 @@ function updateTask(taskId, payload) {
   });
 }
 
+function deleteTask(taskId) {
+  return request({
+    path: `/api/v1/tasks/${taskId}`,
+    method: "DELETE",
+  });
+}
+
 module.exports = {
   login,
   getMonthCalendar,
   getTagOptions,
+  getTags,
+  createTag,
+  updateTag,
+  deleteTag,
   getTodos,
   updateTodoStatus,
   deleteTodo,
+  compensateTodayTodos,
   createTask,
   getTasks,
   getTask,
   updateTask,
+  deleteTask,
 };

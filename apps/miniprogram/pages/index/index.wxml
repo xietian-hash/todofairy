@@ -63,7 +63,7 @@
             bindtouchend="onTodoTouchEnd"
             bindtouchcancel="onTodoTouchCancel"
             bindtap="onTodoCardTap"
-            style="transform: translateX({{movingTodoId===item._id ? movingOffset : (openedTodoId===item._id ? (0 - swipeDeleteWidthPx) : 0)}}px);"
+            style="transform: translateX({{movingTodoId===item._id ? movingOffset : (openedTodoId===item._id ? (0 - todoSwipeDeleteWidthPx) : 0)}}px);"
           >
             <view class="todo-card {{item.status===2 ? 'done' : ''}} {{item.isExpired ? 'expired' : ''}}">
               <view class="todo-main">
@@ -95,14 +95,30 @@
   <block wx:elif="{{currentView==='task'}}">
     <view class="task-list" wx:if="{{tasks.length>0}}">
       <block wx:for="{{tasks}}" wx:key="_id">
-        <view class="task-card {{item.status===0 ? 'disabled' : ''}}">
-          <view class="task-row">
-            <text class="task-title">{{item.title}}</text>
-            <text class="task-status {{item.status===1 ? 'on' : 'off'}}">{{item.statusText}}</text>
+        <view class="task-swipe-item">
+          <view class="task-action-area">
+            <view class="task-edit-btn" data-task-id="{{item._id}}" bindtap="onEditTask">编辑</view>
+            <view class="task-delete-btn" data-task-id="{{item._id}}" bindtap="onDeleteTask">删除</view>
           </view>
-          <view class="task-row task-meta">
-            <text wx:if="{{item.tagName}}" class="task-tag">{{item.tagName}}</text>
-            <text class="task-date">{{item.dateRangeText}}</text>
+          <view
+            class="task-swipe-content {{movingTaskId===item._id ? 'moving' : ''}}"
+            data-task-id="{{item._id}}"
+            bindtouchstart="onTaskTouchStart"
+            bindtouchmove="onTaskTouchMove"
+            bindtouchend="onTaskTouchEnd"
+            bindtouchcancel="onTaskTouchCancel"
+            bindtap="onTaskCardTap"
+            style="transform: translateX({{movingTaskId===item._id ? movingTaskOffset : (openedTaskId===item._id ? (0 - taskSwipeActionWidthPx) : 0)}}px);"
+          >
+            <view class="task-card {{item.status===0 ? 'disabled' : ''}}">
+              <view class="task-row">
+                <text class="task-title">{{item.title}}</text>
+              </view>
+              <view class="task-row task-meta">
+                <text wx:if="{{item.tagName}}" class="task-tag">{{item.tagName}}</text>
+                <text class="task-date">{{item.dateRangeText}}</text>
+              </view>
+            </view>
           </view>
         </view>
       </block>
@@ -114,7 +130,7 @@
   </block>
 
   <view class="bottom-bar">
-    <view class="menu-btn" bindtap="onMenuPlaceholder">☰</view>
+    <view class="menu-btn" bindtap="onOpenMenuDrawer">☰</view>
     <view
       class="view-switcher"
       bindtouchstart="onViewSwitchTouchStart"
@@ -146,18 +162,41 @@
 
         <view class="form-item">
           <text class="label">标签</text>
-          <picker
-            mode="selector"
-            range="{{tagOptions}}"
-            range-key="tagName"
-            value="{{taskTagIndex >= 0 ? taskTagIndex : 0}}"
-            bindchange="onTaskTagChange"
-            disabled="{{tagLoading || tagOptions.length===0}}"
-          >
-            <view class="picker {{taskForm.tagName ? '' : 'picker-placeholder'}} {{tagLoading || tagOptions.length===0 ? 'disabled' : ''}}">
-              {{taskForm.tagName || (tagLoading ? '标签加载中...' : (tagOptions.length>0 ? '请选择标签' : '暂无可选标签'))}}
+          <view wx:if="{{tagLoading}}" class="picker disabled">标签加载中...</view>
+          <view wx:elif="{{tagOptions.length===0}}" class="picker disabled">暂无可选标签</view>
+          <scroll-view wx:else class="tag-scroll" scroll-x enhanced="{{true}}" show-scrollbar="{{false}}">
+            <view class="tag-scroll-inner">
+              <block wx:for="{{tagOptions}}" wx:key="tagId">
+                <view
+                  class="tag-chip {{taskForm.tagId===item.tagId ? 'active' : ''}}"
+                  data-tag-id="{{item.tagId}}"
+                  bindtap="onTaskTagTap"
+                >
+                  {{item.tagName}}
+                </view>
+              </block>
             </view>
-          </picker>
+          </scroll-view>
+        </view>
+
+        <view class="form-item">
+          <text class="label">重复</text>
+          <scroll-view class="repeat-weekday-scroll" scroll-x enhanced="{{true}}" show-scrollbar="{{false}}">
+            <view class="repeat-weekday-group">
+              <block wx:for="{{repeatWeekdayOptions}}" wx:key="value">
+                <view
+                  class="repeat-weekday-chip {{item.selected ? 'active' : ''}}"
+                  data-weekday="{{item.value}}"
+                  bindtap="onToggleTaskRepeatWeekday"
+                >
+                  {{item.label}}
+                </view>
+              </block>
+            </view>
+          </scroll-view>
+          <view class="repeat-weekday-tip">
+            {{(taskForm.repeatWeekdays && taskForm.repeatWeekdays.length>0) ? "仅在选中星期生成待办" : "未选择：仅创建时生成一次待办"}}
+          </view>
         </view>
 
         <view class="form-item row">

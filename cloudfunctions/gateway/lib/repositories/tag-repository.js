@@ -28,7 +28,41 @@ async function getTagById(userId, tagId) {
   return tag;
 }
 
+async function createTag(data) {
+  const res = await db.collection(TAG_COLLECTION).add({ data });
+  return res._id;
+}
+
+async function updateTagById(userId, tagId, data) {
+  await db
+    .collection(TAG_COLLECTION)
+    .where({
+      _id: tagId,
+      userId,
+      isDeleted: false,
+    })
+    .update({
+      data,
+    });
+}
+
+async function softDeleteTagById(userId, tagId, data) {
+  await db
+    .collection(TAG_COLLECTION)
+    .where({
+      _id: tagId,
+      userId,
+      isDeleted: false,
+    })
+    .update({
+      data,
+    });
+}
+
 module.exports = {
   listTagsByUser,
   getTagById,
+  createTag,
+  updateTagById,
+  softDeleteTagById,
 };

@@ -1,5 +1,6 @@
 const { db } = require("../cloud");
 const { todayStr, getNowMs, compareDateStr } = require("../date");
+const { normalizeRepeatRule, isSameRepeatRule } = require("../repeat-rule");
 const todoRepo = require("../repositories/todo-repository");
 const taskRepo = require("../repositories/task-repository");
 const todoService = require("./todo-service");
@@ -74,10 +75,19 @@ async function dailyRollover() {
     const tasks = await taskRepo.listActiveTasksForDate(today, limit, skip);
     if (!tasks.length) break;
     for (const task of tasks) {
+      const normalizedRepeatRule = normalizeRepeatRule(task.repeatRule, false);
+      if (!isSameRepeatRule(task.repeatRule || {}, normalizedRepeatRule)) {
+        await taskRepo.updateTaskById(task._id, task.userId, {
+          repeatRule: normalizedRepeatRule,
+          updatedAt: now,
+        });
+        task.repeatRule = normalizedRepeatRule;
+      }
       const inRange =
         compareDateStr(today, task.effectiveStartDate) >= 0 &&
         (!task.effectiveEndDate || compareDateStr(today, task.effectiveEndDate) <= 0);
       if (!inRange) continue;
+      if (!todoService.shouldTaskGenerateOnDate(task, today, "cron_0000")) continue;
       const result = await todoService.ensureTodoForTaskDate(task, today, "cron_0000");
       if (result.created) {
         todoGenerated += 1;

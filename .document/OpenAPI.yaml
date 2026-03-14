@@ -86,6 +86,84 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TagOptionsResponse'
+  /tags:
+    get:
+      tags:
+        - 标签
+      summary: 获取标签列表
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagListResponse'
+    post:
+      tags:
+        - 标签
+      summary: 创建标签
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TagUpsertRequest'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagDetailResponse'
+  /tags/{tagId}:
+    put:
+      tags:
+        - 标签
+      summary: 编辑标签
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tagId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TagUpsertRequest'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagDetailResponse'
+    delete:
+      tags:
+        - 标签
+      summary: 删除标签（软删除）
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tagId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
   /todos:
     get:
       tags:
@@ -115,6 +193,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TodoListResponse'
+  /todos/compensate-today:
+    post:
+      tags:
+        - 待办
+      summary: 补偿生成当天待办
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoCompensateResponse'
   /todos/{todoId}/status:
     patch:
       tags:
@@ -455,8 +547,14 @@ components:
           properties:
             type:
               type: string
-              enum: [daily]
-          required: [type]
+              enum: [weekly]
+            weekdays:
+              type: array
+              items:
+                type: integer
+                enum: [1, 2, 3, 4, 5, 6, 7]
+              description: 周几数组（1=周一 ... 7=周日），空数组表示不重复
+          required: [type, weekdays]
         status:
           type: integer
           enum: [0, 1]
@@ -488,6 +586,16 @@ components:
           nullable: true
         repeatRule:
           type: object
+          properties:
+            type:
+              type: string
+              enum: [weekly]
+            weekdays:
+              type: array
+              items:
+                type: integer
+                enum: [1, 2, 3, 4, 5, 6, 7]
+          required: [type, weekdays]
         status:
           type: integer
           enum: [0, 1]
@@ -556,9 +664,12 @@ components:
           format: date
         triggerType:
           type: string
-          enum: [create_task, cron_0000, retry]
+          enum: [create_task, update_task, cron_0000, compensate_today, retry]
         title:
           type: string
+        remark:
+          type: string
+          nullable: true
         tagId:
           type: string
           nullable: true
@@ -624,6 +735,58 @@ components:
           properties:
             data:
               $ref: '#/components/schemas/TagOptionsData'
+    TagUpsertRequest:
+      type: object
+      properties:
+        tagName:
+          type: string
+          minLength: 1
+          maxLength: 20
+        sort:
+          type: integer
+          minimum: 0
+          maximum: 9999
+      required: [tagName]
+    TagDetail:
+      type: object
+      properties:
+        tagId:
+          type: string
+        tagName:
+          type: string
+        sort:
+          type: integer
+        createdAt:
+          type: integer
+          format: int64
+        updatedAt:
+          type: integer
+          format: int64
+      required: [tagId, tagName, sort, createdAt, updatedAt]
+    TagListData:
+      type: object
+      properties:
+        total:
+          type: integer
+        list:
+          type: array
+          items:
+            $ref: '#/components/schemas/TagDetail'
+      required: [total, list]
+    TagListResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/TagListData'
+    TagDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/TagDetail'
     TodoStatusUpdateRequest:
       type: object
       properties:
@@ -663,6 +826,24 @@ components:
           properties:
             data:
               $ref: '#/components/schemas/TodoDetail'
+    TodoCompensateData:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        taskScanned:
+          type: integer
+        todoGenerated:
+          type: integer
+      required: [date, taskScanned, todoGenerated]
+    TodoCompensateResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/TodoCompensateData'
     CalendarDayStatus:
       type: object
       properties:
